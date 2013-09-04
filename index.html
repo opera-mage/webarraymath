@@ -795,6 +795,11 @@ if (dst4 argument is defined)
           facilitate continuous filter operation across several buffers.
         </p>
       </div>
+      <div class="issue">
+        We should add versions of setA() and setB() that support regular
+        ECMAScript arrays. Same thing with the constructor (to be able to pass
+        arrays directly instead of using setA() / setB()).
+      </div>
       <p>
         A <code>Filter</code> object MUST internally store filter coefficients
         &mdash; hereafter referred to as the arrays <code>a</code> (for the
@@ -1052,8 +1057,8 @@ ArrayMath.random(x, -1, 1);
 
 var y = new Float32Array(x.length);
 var filt = new Filter(1, 1);
-filt.b[0] = 0.01;
-filt.a[0] = -0.99;
+filt.setB(new Float32Array([0.01]));
+filt.setA(new Float32Array([-0.99]));
 filt.filter(y, x);  <em>// y[k] = 0.01 * x[k] + 0.99 * y[k-1]</em>
       </pre>
       <p>
