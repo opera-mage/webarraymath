@@ -1039,7 +1039,7 @@ end
          Generate a sine signal with 20 cycles:
       </p>
       <pre class="example">
-var y = new Typed32Array(1000);
+var y = new Float32Array(1000);
 ArrayMath.ramp(y, 0, 2*Math.PI*20);
 ArrayMath.sin(y, y);
       </pre>
@@ -1047,10 +1047,10 @@ ArrayMath.sin(y, y);
          Generate a low-pass filtered noise signal, using a first order IIR filter:
       </p>
       <pre class="example">
-var x = new Typed32Array(1000);
+var x = new Float32Array(1000);
 ArrayMath.random(x, -1, 1);
 
-var y = new Typed32Array(x.length);
+var y = new Float32Array(x.length);
 var filt = new Filter(1, 1);
 filt.b[0] = 0.01;
 filt.a[0] = -0.99;
@@ -1061,7 +1061,7 @@ filt.filter(y, x);  <em>// y[k] = 0.01 * x[k] + 0.99 * y[k-1]</em>
       </p>
       <pre class="example">
 function rms (x) {
-  var y = new Typed32Array(x.length);
+  var y = new Float32Array(x.length);
   ArrayMath.mul(y, x, x);
   return Math.sqrt(ArrayMath.sum(y) / y.length);
 }
