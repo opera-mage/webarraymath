@@ -115,6 +115,12 @@
           value representing an undefined or unrepresentable value.
         </p>
         <p>
+          The term <code>RMS</code> is short for Root Mean Square, which is a
+          measure of signal energy. For a given signal it is calculated as the
+          square root of the arithmetic mean of the squares of the absolute
+          values of the signal.
+        </p>
+        <p>
           The term <code>single precision</code> means binary 32-bit IEEE 754
           floating point.
         </p>
@@ -776,11 +782,11 @@ if (dst4 argument is defined)
         <p>
           A <code>Filter</code> object implements FIR (finite impulse response)
           and IIR (infinite impulse response) filters of any order.
-          The type and order of the filter is defined by setting the filter
-          coefficients in the array attributes <code>a</code> and <code>b</code>.
+          The type and order of the filter is defined by setting the
+          <code>a</code> and <code>b</code> filter coefficients.
         </p>
         <p>
-          If the attribute <code>a</code> is an empty array (if it has zero elements),
+          If <code>a</code> is an empty array (if it has zero elements),
           the object will effectively implement a convolution between the
           signal <code>x</code> and the impulse response <code>b</code>.
         </p>
@@ -789,10 +795,12 @@ if (dst4 argument is defined)
           facilitate continuous filter operation across several buffers.
         </p>
       </div>
-      <div class="issue">
-        The interface should be changed so that the <code>a</code> and
-        <code>b</code> coefficients can only be set using explicit setters.
-      </div>
+      <p>
+        A <code>Filter</code> object MUST internally store filter coefficients
+        &mdash; hereafter referred to as the arrays <code>a</code> (for the
+        recursive coefficients) and <code>b</code> (for the convolution
+        coefficients).
+      </p>
       <p>
         A <code>Filter</code> object MUST maintain a history state &mdash; hereafter
         referred to as the <em>history</em> &mdash; of the
@@ -815,21 +823,28 @@ if (dst4 argument is defined)
       <ol class="steps">
         <li>
           If <code>bSize</code> is less than 1, a
-          "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>" exception MUST be thrown.
+          "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>"
+          exception MUST be thrown.
         </li>
         <li>
-          Assign a new <code>Typed32Array</code> object of length <code>bSize</code>
-          to the <code>b</code> attribute, where the first element is assigned the
-          value 1, and the rest of the elements are set to 0 (zero).
+          Create the internal array <code>b</code> of length <code>bSize</code>,
+          where the first element is assigned the value 1, and the rest of the
+          elements are set to 0 (zero).
         </li>
         <li>
-          Assign a new zero filled <code>Typed32Array</code> object of length
-          <code>aSize</code> to the <code>a</code> attribute.
+          Create the internal array <code>a</code> of length <code>aSize</code>,
+          and set all the elements to 0 (zero).
         </li>
         <li>
           Clear the history, as if <code>clearHistory()</code> was called.
         </li>
       </ol>
+      <p>
+        If there was not enough memory to create the <code>Filter</code>
+        object, a
+        "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>"
+        exception MUST be thrown.
+      </p>
       <dl title='[Constructor(unsigned long bSize, optional unsigned long aSize=0)] interface Filter' class='idl'>
         <dt>void filter (Float32Array dst, Float32Array x)</dt>
         <dd>
@@ -881,13 +896,17 @@ end
           at least <code>a.length</code> output samples with the value 0 (zero) have
           previously been generated.
         </dd>
-        <dt>readonly attribute Float32Array b</dt>
+        <dt>void setB (Float32Array values)</dt>
         <dd>
-          TBD
+          This method MUST set the first <code>min(b.length, values.length)</code>
+          coefficients of the internal <code>b</code> array of the filter
+          object.
         </dd>
-        <dt>readonly attribute Float32Array a</dt>
+        <dt>void setA (Float32Array values)</dt>
         <dd>
-          TBD
+          This method MUST set the first <code>min(a.length, values.length)</code>
+          coefficients of the internal <code>a</code> array of the filter
+          object.
         </dd>
       </dl>
     </section>
@@ -909,27 +928,32 @@ end
       </div>
       <p>
         The <code>FFT()</code> constructor, when invoked, MUST return a newly
-        created <code>FFT</code> object. If the constructor was passed an argument,
-        then the <code>FFT</code> object's <code>size</code> property MUST be
-        set to the value of that argument. Otherwise, the object's <code>size</code>
-        property MUST be set to 256.
+        created <code>FFT</code> object.
+      </p>
+      <p>
+        If the constructor was passed an argument, then the <code>FFT</code>
+        object's <code>size</code> property MUST be set to the value of that
+        argument. Otherwise, the object's <code>size</code> property MUST be
+        set to 256.
+      </p>
+      <p>
+        If a value of less than 1 is passed as the argument to the <code>FFT()</code>
+        constructor, a "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>"
+        exception MUST be thrown.
+      </p>
+      <p>
+        If there was not enough memory to create the <code>FFT</code>
+        object, a
+        "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>"
+        exception MUST be thrown.
+      </p>
+      <p>
+        The <code>size</code> property tells the number of frequency bins to
+        use in subsequent calls to the transformation methods of the
+        <code>FFT</code> object: <code>forward</code>, <code>forwardCplx</code>,
+        <code>inverse</code> and <code>inverseCplx</code>.
       </p>
       <dl title='[Constructor(optional unsigned long size=256)] interface FFT' class='idl'>
-        <dt>void forwardCplx (Float32Array dstReal, Float32Array dstImag, Float32Array xReal, Float32Array xImag)</dt>
-        <dd>
-          <div class="note">
-            Computes the forward Fourier transform of
-            the first <code>size</code> elements of the complex input signal
-            (<code>xReal</code> and <code>xImag</code>), and stores the result
-            in the first <code>size</code> elements of the complex output signal
-            (<code>dstReal</code> and <code>dstImag</code>).
-          </div>
-          <p>
-            If any of the arrays <code>xReal</code>, <code>xImag</code>, <code>dstReal</code> and <code>dstImag</code>
-            has less than <code>size</code> elements, the method MUST throw a
-            "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>" exception.
-          </p>
-        </dd>
         <dt>void forward (Float32Array dstReal, Float32Array dstImag, Float32Array x)</dt>
         <dd>
           <p>
@@ -940,15 +964,19 @@ end
             of length <code>size</code>.
           </p>
         </dd>
-        <dt>void inverseCplx (Float32Array dstReal, Float32Array dstImag, Float32Array xReal, Float32Array xImag)</dt>
+        <dt>void forwardCplx (Float32Array dstReal, Float32Array dstImag, Float32Array xReal, Float32Array xImag)</dt>
         <dd>
-          <div class="note">
-            Computes the inverse Fourier transform of
+          <p>
+            This method MUST compute the forward Fourier transform of
             the first <code>size</code> elements of the complex input signal
-            (<code>xReal</code> and <code>xImag</code>), and stores the result
+            (<code>xReal</code> and <code>xImag</code>), and store the result
             in the first <code>size</code> elements of the complex output signal
             (<code>dstReal</code> and <code>dstImag</code>).
-          </div>
+          </p>
+          <p>
+            The generated output signal MUST be scaled such that the RMS of it
+            equals the RMS of the input signal.
+          </p>
           <p>
             If any of the arrays <code>xReal</code>, <code>xImag</code>, <code>dstReal</code> and <code>dstImag</code>
             has less than <code>size</code> elements, the method MUST throw a
@@ -965,25 +993,31 @@ end
             <code>size</code>.
           </p>
         </dd>
-        <dt>attribute unsigned long size</dt>
+        <dt>void inverseCplx (Float32Array dstReal, Float32Array dstImag, Float32Array xReal, Float32Array xImag)</dt>
+        <dd>
+          <p>
+            This method MUST compute the inverse Fourier transform of
+            the first <code>size</code> elements of the complex input signal
+            (<code>xReal</code> and <code>xImag</code>), and store the result
+            in the first <code>size</code> elements of the complex output signal
+            (<code>dstReal</code> and <code>dstImag</code>).
+          </p>
+          <p>
+            The generated output signal MUST be scaled such that the RMS of it
+            equals the RMS of the input signal.
+          </p>
+          <p>
+            If any of the arrays <code>xReal</code>, <code>xImag</code>, <code>dstReal</code> and <code>dstImag</code>
+            has less than <code>size</code> elements, the method MUST throw a
+            "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>" exception.
+          </p>
+        </dd>
+        <dt>readonly attribute unsigned long size</dt>
         <dd>
           <p>
             Reading this attribute MUST return the size of the Fourier transform,
-            i.e. the number of frequency bins that are used during the transform.
+            i.e. the number of frequency bins that are used during a transform.
           </p>
-          <p>
-            Setting this attribute MUST perform the following steps:
-          </p>
-          <ol class="steps">
-            <li>
-              If the value to be set is less than 1, a "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>"
-              exception MUST be thrown.
-            </li>
-            <li>
-              Change the size of the Fourier transform (to be used in subsequent
-              transform operations) to the given value.
-            </li>
-          </ol>
         </dd>
       </dl>
     </section>
