@@ -370,7 +370,7 @@ dstImag[k] = (xImag[k] * yReal[k] - xReal[k] * yImag[k]) / denom
         <dt>void madd (Float32Array dst, Float32Array x, Float32Array y, Float32Array z)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length, z.length)</code>,
-          the method MUST compute <code>dst[k] = x[k] + y[k] * z[k]</code>.
+          the method MUST compute <code>dst[k] = x[k] * y[k] + z[k]</code>.
         </dd>
 
 
