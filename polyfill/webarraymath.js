@@ -558,15 +558,15 @@
         idx0 = outIdx,
         idx1 = outIdx + m;
 
-    var div2 = Math.sqrt(1 / 2);
+    var scale = 0.7071067811865475; // sqrt(1/2)
     var idx0End = idx0 + m;
     while (idx0 < idx0End) {
-      // out0 = out[idx0] / 2
-      out0Re = outRe[idx0] * div2;
-      out0Im = outIm[idx0] * div2;
-      // out1 = out[idx1] / 2
-      out1Re = outRe[idx1] * div2;
-      out1Im = outIm[idx1] * div2;
+      // out0 = out[idx0] / sqrt(2)
+      out0Re = outRe[idx0] * scale;
+      out0Im = outIm[idx0] * scale;
+      // out1 = out[idx1] / sqrt(2)
+      out1Re = outRe[idx1] * scale;
+      out1Im = outIm[idx1] * scale;
 
       // scratch0 = out1 * tw[tw1]
       tRe = twRe[tw1]; tIm = twIm[tw1];
@@ -601,18 +601,18 @@
 
     var epi3Im = twIm[stride*m];
 
-    var div3 = Math.sqrt(1 / 3);
+    var scale = 0.5773502691896258; // sqrt(1/3)
     var idx0End = idx0 + m;
     while (idx0 < idx0End) {
-      // out0 = out[idx0] / 3
-      out0Re = outRe[idx0] * div3;
-      out0Im = outIm[idx0] * div3;
-      // out1 = out[idx1] / 3
-      out1Re = outRe[idx1] * div3;
-      out1Im = outIm[idx1] * div3;
-      // out2 = out[idx2] / 3
-      out2Re = outRe[idx2] * div3;
-      out2Im = outIm[idx2] * div3;
+      // out0 = out[idx0] / sqrt(3)
+      out0Re = outRe[idx0] * scale;
+      out0Im = outIm[idx0] * scale;
+      // out1 = out[idx1] / sqrt(3)
+      out1Re = outRe[idx1] * scale;
+      out1Im = outIm[idx1] * scale;
+      // out2 = out[idx2] / sqrt(3)
+      out2Re = outRe[idx2] * scale;
+      out2Im = outIm[idx2] * scale;
 
       // scratch1 = out1 * tw[tw1]
       tRe = twRe[tw1]; tIm = twIm[tw1];
@@ -671,21 +671,21 @@
         idx2 = outIdx + 2 * m,
         idx3 = outIdx + 3 * m;
 
-    var div4 = Math.sqrt(1 / 4);
+    var scale = 0.5; // sqrt(1/4)
     var idx0End = idx0 + m;
     while (idx0 < idx0End) {
-      // out0 = out[idx0] / 4
-      out0Re = outRe[idx0] * div4;
-      out0Im = outIm[idx0] * div4;
-      // out1 = out[idx1] / 4
-      out1Re = outRe[idx1] * div4;
-      out1Im = outIm[idx1] * div4;
-      // out2 = out[idx2] / 4
-      out2Re = outRe[idx2] * div4;
-      out2Im = outIm[idx2] * div4;
-      // out3 = out[idx3] / 4
-      out3Re = outRe[idx3] * div4;
-      out3Im = outIm[idx3] * div4;
+      // out0 = out[idx0] / sqrt(4)
+      out0Re = outRe[idx0] * scale;
+      out0Im = outIm[idx0] * scale;
+      // out1 = out[idx1] / sqrt(4)
+      out1Re = outRe[idx1] * scale;
+      out1Im = outIm[idx1] * scale;
+      // out2 = out[idx2] / sqrt(4)
+      out2Re = outRe[idx2] * scale;
+      out2Im = outIm[idx2] * scale;
+      // out3 = out[idx3] / sqrt(4)
+      out3Re = outRe[idx3] * scale;
+      out3Im = outIm[idx3] * scale;
 
       // scratch0 = out1 * tw[tw1]
       tRe = twRe[tw1]; tIm = twIm[tw1];
@@ -774,24 +774,24 @@
     var ybRe = twRe[stride * 2 * m],
         ybIm = twIm[stride * 2 * m];
 
-    var div5 = Math.sqrt(1 / 5);
+    var scale = 0.4472135954999579; // sqrt(1/5)
     var idx0End = idx0 + m;
     while (idx0 < idx0End) {
-      // out0 = out[idx0] / 5
-      out0Re = outRe[idx0] * div5;
-      out0Im = outIm[idx0] * div5;
-      // out1 = out[idx1] / 5
-      out1Re = outRe[idx1] * div5;
-      out1Im = outIm[idx1] * div5;
-      // out2 = out[idx2] / 5
-      out2Re = outRe[idx2] * div5;
-      out2Im = outIm[idx2] * div5;
-      // out3 = out[idx3] / 5
-      out3Re = outRe[idx3] * div5;
-      out3Im = outIm[idx3] * div5;
-      // out4 = out[idx4] / 5
-      out4Re = outRe[idx4] * div5;
-      out4Im = outIm[idx4] * div5;
+      // out0 = out[idx0] / sqrt(5)
+      out0Re = outRe[idx0] * scale;
+      out0Im = outIm[idx0] * scale;
+      // out1 = out[idx1] / sqrt(5)
+      out1Re = outRe[idx1] * scale;
+      out1Im = outIm[idx1] * scale;
+      // out2 = out[idx2] / sqrt(5)
+      out2Re = outRe[idx2] * scale;
+      out2Im = outIm[idx2] * scale;
+      // out3 = out[idx3] / sqrt(5)
+      out3Re = outRe[idx3] * scale;
+      out3Im = outIm[idx3] * scale;
+      // out4 = out[idx4] / sqrt(5)
+      out4Re = outRe[idx4] * scale;
+      out4Im = outIm[idx4] * scale;
 
       // scratch0 = out0;
       scratch0Re = out0Re;
@@ -870,13 +870,16 @@
     var scratchRe = new Float32Array(p);
     var scratchIm = new Float32Array(p);
 
-    var divP = Math.sqrt(1 / p);
+    // FIXME: This seems to give the wrong scaling when using an FFT size that
+    // can be factorized into more than one butterflyN (e.g. try a FFT size of
+    // 11*13).
+    var scale = Math.sqrt(1 / p);
     for (u = 0; u < m; ++u) {
       idx0 = outIdx + u;
       for (q1 = 0; q1 < p; ++q1) {
-        // scratch[q1] = out[idx0] / p
-        scratchRe[q1] = outRe[idx0] * divP;
-        scratchIm[q1] = outIm[idx0] * divP;
+        // scratch[q1] = out[idx0] / sqrt(p)
+        scratchRe[q1] = outRe[idx0] * scale;
+        scratchIm[q1] = outIm[idx0] * scale;
         idx0 += m;
       }
 
