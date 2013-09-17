@@ -870,9 +870,6 @@
     var scratchRe = new Float32Array(p);
     var scratchIm = new Float32Array(p);
 
-    // FIXME: This seems to give the wrong scaling when using an FFT size that
-    // can be factorized into more than one butterflyN (e.g. try a FFT size of
-    // 11*13).
     var scale = Math.sqrt(1 / p);
     for (u = 0; u < m; ++u) {
       idx0 = outIdx + u;
@@ -1007,6 +1004,8 @@
     this._factors = new Int32Array(2 * 32);  // MAXFACTORS = 32
 
     // Init radix factors (mixed radix breakdown)
+    // FIXME: Something seems to go wrong when using an FFT size that can be
+    // factorized into more than one butterflyN (e.g. try an FFT size of 11*13).
     factor(size, this._factors);
   };
 
