@@ -30,7 +30,7 @@
 //------------------------------------------------------------------------------
 
 (function () {
-  if (window.ArrayMath) return;
+  if (self.ArrayMath) return;
 
   var ArrayMath = {};
 
@@ -273,7 +273,7 @@
     return ret;
   };
 
-  ArrayMath.sampleLinear = function (dst, x, t, repeat) {
+  ArrayMath.sampleLinear = function (dst, x, t) {
     var xLen = x.length, maxIdx = xLen - 1;
     for (var k = Math.min(dst.length, t.length) - 1; k >= 0; --k) {
       var t2 = t[k];
@@ -286,7 +286,7 @@
     }
   };
 
-  ArrayMath.sampleLinearRepeat = function (dst, x, t, repeat) {
+  ArrayMath.sampleLinearRepeat = function (dst, x, t) {
     var xLen = x.length, maxIdx = xLen - 1;
     for (var k = Math.min(dst.length, t.length) - 1; k >= 0; --k) {
       var t2 = t[k];
@@ -299,7 +299,7 @@
     }
   };
 
-  ArrayMath.sampleCubic = function (dst, x, t, repeat) {
+  ArrayMath.sampleCubic = function (dst, x, t) {
     var xLen = x.length, maxIdx = xLen - 1;
     for (var k = Math.min(dst.length, t.length) - 1; k >= 0; --k) {
       var t2 = t[k];
@@ -320,7 +320,7 @@
     }
   };
 
-  ArrayMath.sampleCubicRepeat = function (dst, x, t, repeat) {
+  ArrayMath.sampleCubicRepeat = function (dst, x, t) {
     var xLen = x.length, maxIdx = xLen - 1;
     for (var k = Math.min(dst.length, t.length) - 1; k >= 0; --k) {
       var t2 = t[k];
@@ -407,7 +407,7 @@
       }
   };
 
-  window.ArrayMath = ArrayMath;
+  self.ArrayMath = ArrayMath;
 })();
 
 
@@ -416,7 +416,7 @@
 //------------------------------------------------------------------------------
 
 (function () {
-  if (window.Filter) return;
+  if (self.Filter) return;
 
   var Filter = function (bSize, aSize) {
     if (isNaN(parseFloat(bSize)) || !isFinite(bSize))
@@ -530,7 +530,7 @@
       this._a[k] = values[k];
   };
 
-  window.Filter = Filter;
+  self.Filter = Filter;
 })();
 
 
@@ -547,7 +547,7 @@
 //------------------------------------------------------------------------------
 
 (function () {
-  if (window.FFT) return;
+  if (self.FFT) return;
 
   var butterfly2 = function (outRe, outIm, outIdx, stride, twRe, twIm, m) {
     var scratch0Re, scratch0Im,
@@ -1031,6 +1031,6 @@
     this.inverseCplx(dst, new Float32Array(this.size), xReal, xImag);
   };
 
-  window.FFT = FFT;
+  self.FFT = FFT;
 })();
 
