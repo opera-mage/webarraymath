@@ -1,0 +1,52 @@
+<html>
+<head>
+<title>Web Array Math API benchmark</title>
+<script type="text/javascript" src="../polyfill/webarraymath.js"></script>
+<script type="text/javascript" src="benchmark.js"></script>
+<script type="text/javascript">
+function Run() {
+  try {
+    Benchmark(function (msg) {
+      document.getElementById("output").textContent += msg + "\n";
+    });
+  } catch (err) {
+    document.getElementById("output").textContent += err.message + "\n";
+  }
+}
+
+function RunInWorker() {
+  var myWorker = new Worker("benchmarkworker.js");
+  myWorker.onmessage = function (oEvent) {
+    document.getElementById("output").textContent += oEvent.data + "\n";
+  }
+  myWorker.onerror = function (oEvent) {
+    document.getElementById("output").textContent += "ERROR: " +
+        oEvent.filename + "(" + oEvent.lineno + "): " +  oEvent.message + "\n";
+  }
+  myWorker.postMessage("Go-go-go!");
+}
+
+function ClearOutput() {
+  document.getElementById("output").textContent = "";
+}
+</script>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+}
+</style>
+</head>
+<body>
+<h2>Web Array Math API benchmark</h2>
+<p>Here are some <a href="results.html">results</a>.</p>
+<p>Warning: "Run in main thread" is not recommended - it's just there to test
+that things work as expected both in workers and in the main thread.</p>
+<div>
+<input type="submit" value="Run in worker" onclick="RunInWorker()" />
+<input type="submit" value="Run in main thread" onclick="Run()" />
+<input type="submit" value="Clear output" onclick="ClearOutput()" />
+</div>
+<pre id="output"></pre>
+</body>
+</html>
+
