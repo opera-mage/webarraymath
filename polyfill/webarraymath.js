@@ -249,6 +249,12 @@
     }
   };
 
+  ArrayMath.fill = function (dst, value) {
+    for (var k = dst.length - 1; k >= 0; --k) {
+      dst[k] = value;
+    }
+  };
+
   ArrayMath.ramp = function (dst, first, last) {
     var maxIdx = dst.length - 1;
     if (maxIdx >= 0)
