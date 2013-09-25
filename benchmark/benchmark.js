@@ -18,6 +18,20 @@ function Benchmark(println) {
   var z = new Float32Array(LENGTH);
   var t0, dt, total = 0, k;
 
+  // ...just warm up the CPU...
+  println("(warming up...)");
+  ArrayMath.fill(y, 123);
+  for (k = 0; k < 5 * ITERATIONS; ++k)
+    ArrayMath.add(x, 123, y);
+
+  // fill
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    ArrayMath.fill(x, 123);
+  dt = time() - t0;
+  total += dt;
+  showResult("fill", dt);
+
   // ramp
   t0 = time();
   for (k = 0; k < ITERATIONS; ++k)
@@ -64,6 +78,14 @@ function Benchmark(println) {
   dt = time() - t0;
   total += dt;
   showResult("round", dt);
+
+  // abs
+  ArrayMath.ramp(x, -1000, 1000);
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    ArrayMath.abs(z, x);
+  dt = time() - t0;
+  showResult("abs", dt);
 
   // sqrt
   ArrayMath.ramp(x, 10, 1000);
