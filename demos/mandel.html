@@ -4,7 +4,7 @@
 <script type="text/javascript">
 function Demo() {
   // Constants.
-  var NUM_WORKERS = 8;
+  var NUM_WORKERS = 16;
 
   // Private members.
   var m_canvas;
@@ -15,32 +15,41 @@ function Demo() {
   var m_workers;
   var m_num_active_workers;
 
-  this.init = function () {
-    // Init the canvas.
-    m_canvas = document.getElementById("canvas");
-    m_ctx = m_canvas.getContext("2d");
-    m_width = m_canvas.width;
-    m_height = m_canvas.height;
-    m_img = m_ctx.createImageData(m_width, m_height);
+  var m_cplx_center = { x: -0.5, y: 0.0 };
+  var m_cplx_height = 2;
 
-    // Set up workers.
-    m_workers = [];
-    for (var k = 0; k < NUM_WORKERS; ++k) {
-      // Set up the worker.
-      var w = new Worker("mandel.js");
-      w.onerror = function (e) {
-        document.getElementById("output").textContent += "ERROR: " +
-            e.filename + "(" + e.lineno + "): " +  e.message + "\n";
-      }
-      m_workers[k] = w;
-    }
-    m_num_active_workers = 0;
+  var getBounds = function () {
+    var h = m_cplx_height / 2;
+    var w = h * (m_width / m_height);
+    return {
+      xMin: m_cplx_center.x - w,
+      xMax: m_cplx_center.x + w,
+      yMin: m_cplx_center.y - h,
+      yMax: m_cplx_center.y + h
+    };
   };
 
-  this.redraw = function (reMin, reMax, imMin, imMax) {
+  var m_t_start = -1;
+
+  var animateBounds = function () {
+    var t = (new Date()).getTime() * 0.001;
+    if (m_t_start < 0) {
+      m_t_start = t;
+    }
+    t -= m_t_start;
+
+    m_cplx_height = 1 + 0.8 * Math.cos(0.2*t);
+    m_cplx_center.x = -0.5 + 0.2 * Math.sin(0.3*t);
+    m_cplx_center.y = 0.0 + 0.2 * Math.sin(0.45*t);
+  };
+
+  var redraw = function () {
     if (m_num_active_workers > 0) {
       return;
     }
+
+    animateBounds();
+    var bounds = getBounds();
 
     var startWorker = function (worker, firstRow, numRows) {
       worker.onmessage = function (e) {
@@ -50,12 +59,18 @@ function Demo() {
         // Last worker?
         m_num_active_workers--;
         if (m_num_active_workers == 0) {
-          // Print time spent in the workers.
-          var t1 = new Date();
-          document.getElementById("output").textContent += "Time: " + ((t1 - t0) * 0.001) + "s\n";
-
           // Write the image data.
           m_ctx.putImageData(m_img, 0, 0);
+
+          // Request another animation frame.
+          if (window.requestAnimationFrame)
+            requestAnimationFrame(redraw);
+          else if (window.mozRequestAnimationFrame)
+            mozRequestAnimationFrame(redraw);
+          else if (window.webkitRequestAnimationFrame)
+            webkitRequestAnimationFrame(redraw);
+          else
+            setTimeout(redraw, 1);
         }
       };
 
@@ -63,10 +78,10 @@ function Demo() {
       worker.postMessage({
         width: m_width,
         height: numRows,
-        reMin: reMin,
-        reMax: reMax,
-        imMin: imMin + (firstRow / m_height) * (imMax - imMin),
-        imMax: imMin + ((firstRow + numRows - 1) / m_height) * (imMax - imMin)
+        reMin: bounds.xMin,
+        reMax: bounds.xMax,
+        imMin: bounds.yMin + (firstRow / m_height) * (bounds.yMax - bounds.yMin),
+        imMax: bounds.yMin + ((firstRow + numRows - 1) / m_height) * (bounds.yMax - bounds.yMin)
       });
     };
 
@@ -82,6 +97,30 @@ function Demo() {
       firstRow += numRows;
     }
   };
+
+  this.init = function () {
+    // Init the canvas.
+    m_canvas = document.getElementById("canvas");
+    m_ctx = m_canvas.getContext("2d");
+    m_width = m_canvas.width;
+    m_height = m_canvas.height;
+    m_img = m_ctx.createImageData(m_width, m_height);
+
+    // Set up workers.
+    m_workers = [];
+    for (var k = 0; k < NUM_WORKERS; ++k) {
+      // Set up the worker.
+      var w = new Worker("mandel.js");
+      w.onerror = function (e) {
+        alert("ERROR: " + e.filename + "(" + e.lineno + "): " +  e.message);
+      }
+      m_workers[k] = w;
+    }
+    m_num_active_workers = 0;
+
+    // Start animation.
+    redraw();
+  };
 };
 
 var demo = new Demo();
@@ -95,12 +134,8 @@ body {
 <body onload="demo.init()">
 <h2>Mandelbrot demo</h2>
 <div>
-<input type="submit" value="Redraw" onclick="demo.redraw(-2, 1, -1, 1)" />
-</div>
-<div>
 <canvas id="canvas" width="1024" height="683" />
 </div>
-<pre id="output"></pre>
 </body>
 </html>
 
