@@ -1,22 +1,49 @@
 <html>
 <head>
-<title>Web Array Math API - Mandelbrot</title>
+<title>Web Array Math API - Mandelbrot demo</title>
 <script type="text/javascript">
+"use strict";
+
 function Demo() {
   // Constants.
-  var NUM_WORKERS = 16;
+  var NUM_WORKERS = 12;
 
-  // Private members.
+  // Canvas properties.
   var m_canvas;
   var m_ctx;
   var m_width;
   var m_height;
   var m_img;
+
+  // Workers.
   var m_workers;
   var m_num_active_workers;
 
-  var m_cplx_center = { x: -0.5, y: 0.0 };
-  var m_cplx_height = 2;
+  // Current view (see animateBounds).
+  var m_cplx_center = { x: 0, y: 0 };
+  var m_cplx_height = 1;
+
+  // Starting time for this demo.
+  var m_t_start = -1;
+
+  // FPS counter.
+  var m_num_frames = 0;
+  var m_total_frames_time = 0;
+  var m_frame_start_time;
+  var m_fps = -1;
+
+  var animateBounds = function () {
+    var t = (new Date()).getTime() * 0.001;
+    if (m_t_start < 0) {
+      m_t_start = t;
+    }
+    t -= m_t_start;
+
+    var w = 0.5 + 0.5 * Math.cos(0.2 * t);
+    m_cplx_height = 0.1 + 1.9 * w;
+    m_cplx_center.x = -0.15 + (1 - w ) * 0.6 * Math.cos(0.15 * t);
+    m_cplx_center.y = 0.0 + (1 - w ) * 0.65 * Math.sin(0.15 * t);
+  };
 
   var getBounds = function () {
     var h = m_cplx_height / 2;
@@ -27,20 +54,6 @@ function Demo() {
       yMin: m_cplx_center.y - h,
       yMax: m_cplx_center.y + h
     };
-  };
-
-  var m_t_start = -1;
-
-  var animateBounds = function () {
-    var t = (new Date()).getTime() * 0.001;
-    if (m_t_start < 0) {
-      m_t_start = t;
-    }
-    t -= m_t_start;
-
-    m_cplx_height = 1 + 0.8 * Math.cos(0.2*t);
-    m_cplx_center.x = -0.5 + 0.2 * Math.sin(0.3*t);
-    m_cplx_center.y = 0.0 + 0.2 * Math.sin(0.45*t);
   };
 
   var redraw = function () {
@@ -59,8 +72,23 @@ function Demo() {
         // Last worker?
         m_num_active_workers--;
         if (m_num_active_workers == 0) {
+          // Update FPS counter.
+          var dt = ((new Date()).getTime() - m_frame_start_time) * 0.001;
+          m_total_frames_time += dt;
+          m_num_frames++;
+          if (m_total_frames_time >= 1.0 && m_num_frames >= 2) {
+            m_fps = m_num_frames / m_total_frames_time;
+            m_total_frames_time = 0;
+            m_num_frames = 0;
+          }
+
           // Write the image data.
           m_ctx.putImageData(m_img, 0, 0);
+
+          if (m_fps > 0) {
+            var fpsDisp = Math.round(m_fps * 10) / 10;
+            m_ctx.fillText("" + fpsDisp + " fps", 10, 10);
+          }
 
           // Request another animation frame.
           if (window.requestAnimationFrame)
@@ -87,7 +115,7 @@ function Demo() {
 
     // Start all workers.
     var m_num_active_workers = NUM_WORKERS;
-    var t0 = new Date();
+    m_frame_start_time = (new Date()).getTime();
     var firstRow = 0, numRows = Math.ceil(m_height / NUM_WORKERS);
     for (var k = 0; k < NUM_WORKERS; ++k) {
       if (firstRow + numRows > m_height) {
@@ -105,6 +133,9 @@ function Demo() {
     m_width = m_canvas.width;
     m_height = m_canvas.height;
     m_img = m_ctx.createImageData(m_width, m_height);
+    m_ctx.font = "20pt sans-serif";
+    m_ctx.textBaseline = "top";
+    m_ctx.fillStyle = "rgb(255, 255, 255)";
 
     // Set up workers.
     m_workers = [];
@@ -132,7 +163,6 @@ body {
 </style>
 </head>
 <body onload="demo.init()">
-<h2>Mandelbrot demo</h2>
 <div>
 <canvas id="canvas" width="1024" height="683" />
 </div>

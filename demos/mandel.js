@@ -39,7 +39,7 @@ onmessage = function (e) {
     ArrayMath.fill(imZ, 0);
 
     // Do work (z = z^2 + c)...
-    for (var k = 0; k < 200; ++k) {
+    for (var k = 0; k < 100; ++k) {
       ArrayMath.mulCplx(reZ, imZ, reZ, imZ, reZ, imZ);
       ArrayMath.add(reZ, reZ, reC);
       ArrayMath.add(imZ, imZ, imC);
