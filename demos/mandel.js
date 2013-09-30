@@ -31,9 +31,6 @@ onmessage = function (e) {
 
   var bytePos = 0, byteStride = width * 4;
   for (var y = 0; y < height; ++y) {
-    // Update the imaginary part of the C constant for this row.
-    ArrayMath.fill(imC, imagRamp[y]);
-
     // Clear work arrays.
     ArrayMath.fill(reZ, 0);
     ArrayMath.fill(imZ, 0);
@@ -41,8 +38,8 @@ onmessage = function (e) {
     // Do work (z = z^2 + c)...
     for (var k = 0; k < 100; ++k) {
       ArrayMath.mulCplx(reZ, imZ, reZ, imZ, reZ, imZ);
-      ArrayMath.add(reZ, reZ, reC);
-      ArrayMath.add(imZ, imZ, imC);
+      ArrayMath.add(reZ, reC, reZ);
+      ArrayMath.add(imZ, imagRamp[y], imZ);
     }
 
     // Convert complex data into some nice colors.
@@ -54,7 +51,6 @@ onmessage = function (e) {
     ArrayMath.fract(b, b);
     ArrayMath.abs(r, r);
     ArrayMath.abs(g, g);
-    ArrayMath.abs(b, b);
     ArrayMath.mul(r, 256, r);
     ArrayMath.mul(g, 256, g);
     ArrayMath.mul(b, 256, b);
