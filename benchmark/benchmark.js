@@ -16,18 +16,18 @@ function Benchmark(println) {
   var x = new Float32Array(LENGTH);
   var y = new Float32Array(LENGTH);
   var z = new Float32Array(LENGTH);
-  var t0, dt, total = 0, k;
+  var t0, dt, total = 0, k, filter, fft;
 
   // ...just warm up the CPU...
   println("(warming up...)");
   ArrayMath.fill(y, 123);
-  for (k = 0; k < 5 * ITERATIONS; ++k)
-    ArrayMath.add(x, 123, y);
+  for (k = 0; k < 2 * ITERATIONS; ++k)
+    ArrayMath.add(z, x, y);
 
   // fill
   t0 = time();
   for (k = 0; k < ITERATIONS; ++k)
-    ArrayMath.fill(x, 123);
+    ArrayMath.fill(z, 123);
   dt = time() - t0;
   total += dt;
   showResult("fill", dt);
@@ -35,7 +35,7 @@ function Benchmark(println) {
   // ramp
   t0 = time();
   for (k = 0; k < ITERATIONS; ++k)
-    ArrayMath.ramp(x, -1000, 1000);
+    ArrayMath.ramp(z, -1000, 1000);
   dt = time() - t0;
   total += dt;
   showResult("ramp", dt);
@@ -116,7 +116,7 @@ function Benchmark(println) {
   // random
   t0 = time();
   for (k = 0; k < ITERATIONS; ++k)
-    ArrayMath.random(x, -1000, 1000);
+    ArrayMath.random(z, -1000, 1000);
   dt = time() - t0;
   total += dt;
   showResult("random", dt);
@@ -139,6 +139,56 @@ function Benchmark(println) {
   dt = time() - t0;
   total += dt;
   showResult("sampleLinear", dt);
+
+  // filter - first order IIR
+  filter = new Filter(1, 1);
+  ArrayMath.ramp(x, -1000, 1000);
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    filter.filter(z, x);
+  dt = time() - t0;
+  total += dt;
+  showResult("filter(1st order IIR)", dt);
+
+  // filter - biquad
+  filter = new Filter(3, 2);
+  ArrayMath.ramp(x, -1000, 1000);
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    filter.filter(z, x);
+  dt = time() - t0;
+  total += dt;
+  showResult("filter(biquad)", dt);
+
+  // filter - 50-tab FIR
+  filter = new Filter(50);
+  ArrayMath.ramp(x, -1000, 1000);
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    filter.filter(z, x);
+  dt = time() - t0;
+  total += dt;
+  showResult("filter(50-tab FIR)", dt);
+
+  // FFT(256)
+  fft = new FFT(256);
+  ArrayMath.ramp(x, -1000, 1000);
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    fft.forward(y, z, x);
+  dt = time() - t0;
+  total += dt;
+  showResult("FFT(256)", dt * LENGTH / fft.size);
+
+  // FFT(256)
+  fft = new FFT(2048);
+  ArrayMath.ramp(x, -1000, 1000);
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    fft.forward(y, z, x);
+  dt = time() - t0;
+  total += dt;
+  showResult("FFT(2048)", dt * LENGTH / fft.size);
 
   println("---Done---");
   println("Total: " + total + "ms\n");
