@@ -10,6 +10,8 @@ JavaScript.
 You can preview the current version of the specification
 [here](http://opera-mage.github.com/webarraymath/).
 
+Demos can be found [here](http://opera-mage.github.com/webarraymath/demos/).
+
 This repository also hosts a JavaScript polyfill that should work on most
 browsers (you can find it
 [here](http://opera-mage.github.com/webarraymath/polyfill/webarraymath.js)).
