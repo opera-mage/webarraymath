@@ -87,6 +87,14 @@ function Benchmark(println) {
   dt = time() - t0;
   showResult("abs", dt);
 
+  // sign
+  ArrayMath.ramp(x, -1000, 1000);
+  t0 = time();
+  for (k = 0; k < ITERATIONS; ++k)
+    ArrayMath.sign(z, x);
+  dt = time() - t0;
+  showResult("sign", dt);
+
   // sqrt
   ArrayMath.ramp(x, 10, 1000);
   t0 = time();
@@ -159,7 +167,7 @@ function Benchmark(println) {
   dt = time() - t0;
   total += dt;
   showResult("filter(biquad)", dt);
-
+/*
   // filter - 50-tab FIR
   filter = new Filter(50);
   ArrayMath.ramp(x, -1000, 1000);
@@ -189,7 +197,7 @@ function Benchmark(println) {
   dt = time() - t0;
   total += dt;
   showResult("FFT(2048)", dt * LENGTH / fft.size);
-
+*/
   println("---Done---");
   println("Total: " + total + "ms\n");
 }
