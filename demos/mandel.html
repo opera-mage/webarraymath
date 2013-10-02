@@ -144,6 +144,15 @@ function Demo() {
     m_width = m_canvas.width;
     m_height = m_canvas.height;
     m_img = m_ctx.createImageData(m_width, m_height);
+    if (!m_img.data.set) {
+      // set() polyfill (for IE).
+      m_img.data.set = function (src, offset) {
+        var len = Math.max(Math.min(src.length, this.length - offset), 0);
+        for (var k = 0; k < len; ++k) {
+          this[k + offset] = src[k];
+        }
+      };
+    }
     m_ctx.font = "20pt sans-serif";
     m_ctx.textBaseline = "top";
     m_ctx.fillStyle = "rgb(255, 255, 255)";

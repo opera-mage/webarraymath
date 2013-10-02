@@ -1,5 +1,13 @@
 importScripts("../polyfill/webarraymath.js");
 
+// Simple Uint8ClampedArray polyfill (for IE).
+if (!self.Uint8ClampedArray) {
+  if (self.CanvasPixelArray)
+    self.Uint8ClampedArray = self.CanvasPixelArray;
+  else
+    self.Uint8ClampedArray = self.Uint8Array;
+}
+
 onmessage = function (e) {
   // Get working set parameters.
   var width = e.data.width;
