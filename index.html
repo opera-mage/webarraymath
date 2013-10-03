@@ -546,16 +546,19 @@ dstImag[k] = (xImag[k] * yReal[k] - xReal[k] * yImag[k]) / denom
             </p>
           </div>
           <p>
-            The method MUST perform the following steps:
+            The method MUST perform one of the following two operations:
           </p>
           <ol class="steps">
             <li>
               If the array <code>x</code> is empty (has zero elements), the method
-              MUST throw a "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>" exception.
+              MUST set each element <code>dst[k]</code> to zero, where
+              <code>k</code> is in the range <code>0</code> &le; <code>k</code>
+              &lt; <code>min(dst.length, t.length)</code>.
             </li>
             <li>
-              The method MUST perform the following operation for each
-              <code>k</code> in the range <code>0</code> &le; <code>k</code>
+              If the array <code>x</code> has at least one element, the method
+              MUST perform the following operation for each <code>k</code> in
+              the range <code>0</code> &le; <code>k</code>
               &lt; <code>min(dst.length, t.length)</code>:
               <pre class="sh_sourceCode">
 t' = clamp(t[k], 0, x.length - 1)
@@ -581,15 +584,18 @@ dst[k] = (1 - w) * p1 + w * p2
             </p>
           </div>
           <p>
-            The method MUST perform the following steps:
+            The method MUST perform one of the following two operations:
           </p>
           <ol class="steps">
             <li>
               If the array <code>x</code> is empty (has zero elements), the method
-              MUST throw a "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>" exception.
+              MUST set each element <code>dst[k]</code> to zero, where
+              <code>k</code> is in the range <code>0</code> &le; <code>k</code>
+              &lt; <code>min(dst.length, t.length)</code>.
             </li>
             <li>
-              The method MUST perform the following operation for each
+              If the array <code>x</code> has at least one element, the method
+              MUST perform the following operation for each
               <code>k</code> in the range <code>0</code> &le; <code>k</code>
               &lt; <code>min(dst.length, t.length)</code>:
               <pre class="sh_sourceCode">
@@ -618,15 +624,18 @@ dst[k] = (1 - w) * p1 + w * p2
             </p>
           </div>
           <p>
-            The method MUST perform the following steps:
+            The method MUST perform one of the following two operations:
           </p>
           <ol class="steps">
             <li>
               If the array <code>x</code> is empty (has zero elements), the method
-              MUST throw a "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>" exception.
+              MUST set each element <code>dst[k]</code> to zero, where
+              <code>k</code> is in the range <code>0</code> &le; <code>k</code>
+              &lt; <code>min(dst.length, t.length)</code>.
             </li>
             <li>
-              The method MUST perform the following operation for each
+              If the array <code>x</code> has at least one element, the method
+              MUST perform the following operation for each
               <code>k</code> in the range <code>0</code> &le; <code>k</code>
               &lt; <code>min(dst.length, t.length)</code>:
               <pre class="sh_sourceCode">
@@ -662,15 +671,18 @@ dst[k] = h1 * p2 + h2 * p3 + h3 * (p3 - p1) + h4 * (p4 - p2)
             </p>
           </div>
           <p>
-            The method MUST perform the following steps:
+            The method MUST perform one of the following two operations:
           </p>
           <ol class="steps">
             <li>
               If the array <code>x</code> is empty (has zero elements), the method
-              MUST throw a "<a href="http://www.w3.org/TR/dom/#dom-domexception-not_supported_err">NotSupportedError</a>" exception.
+              MUST set each element <code>dst[k]</code> to zero, where
+              <code>k</code> is in the range <code>0</code> &le; <code>k</code>
+              &lt; <code>min(dst.length, t.length)</code>.
             </li>
             <li>
-              The method MUST perform the following operation for each
+              If the array <code>x</code> has at least one element, the method
+              MUST perform the following operation for each
               <code>k</code> in the range <code>0</code> &le; <code>k</code>
               &lt; <code>min(dst.length, t.length)</code>:
               <pre class="sh_sourceCode">
