@@ -23,9 +23,9 @@ body {
 function Demo() {
 
   var PROFILE_SIZE = 256;
-  var FFT_SIZE = 262144;
+  var FFT_SIZE = 131072;
   var SAMPLE_RATE = 44100;
-  var NOTE_FREQ = 220;
+  var NOTE_FREQ = 4*220;
 
   var m_canvas = {
     ctx: null,
@@ -47,12 +47,28 @@ function Demo() {
   };
   var m_fft = new FFT(FFT_SIZE);
 
+  var m_audioContext;
+  var m_audioBuffer;
+
   this.init = function () {
+    // Initialize canvas.
     var canvas = document.getElementById("canvas");
     m_canvas.ctx = canvas.getContext("2d");
     m_canvas.width = canvas.width;
     m_canvas.height = canvas.height;
 
+    // Initialize Web Audio context.
+    if (window.AudioContext) {
+      m_audioContext = new AudioContext();
+    }
+    else if (window.webkitAudioContext) {
+      m_audioContext = new webkitAudioContext();
+    }
+    if (m_audioContext) {
+      m_audioBuffer = m_audioContext.createBuffer(2, FFT_SIZE, SAMPLE_RATE);
+    }
+
+    // Generate initial harmonic profile.
     document.getElementById("profileWidth").addEventListener("change", updateProfileWidth, false);
     updateProfileWidth();
   };
@@ -78,8 +94,8 @@ function Demo() {
       var y = h - 2 - m_profile[i] * (h - 4);
       ctx.lineTo(x, y);
     }
-    ctx.lineTo(w, h+1);
-    ctx.lineTo(0, h+1);
+    ctx.lineTo(w, h + 1);
+    ctx.lineTo(0, h + 1);
     ctx.closePath();
     ctx.fill();
   };
@@ -104,6 +120,16 @@ function Demo() {
     m_profile_type = profile;
     generateProfile();
     drawProfile();
+  };
+
+  var createSound = function () {
+    if (!m_audioContext) {
+      return;
+    }
+
+    // Copy generated data to the audio buffer object.
+    m_audioBuffer.getChannelData(0).set(m_wave.left);
+    m_audioBuffer.getChannelData(1).set(m_wave.right);
   };
 
   this.generate = function () {
@@ -141,17 +167,16 @@ function Demo() {
     }
 
     // Construct full frequency response (mirror).
-    for (var k = (FFT_SIZE / 2); k >= 0; k--) {
-      m_spectrum.re[FFT_SIZE - 1 - k] = m_spectrum.re[k];
+    for (var k = (FFT_SIZE / 2); k > 0; k--) {
+      m_spectrum.re[FFT_SIZE - k] = m_spectrum.re[k];
     }
 
     // Randomize the phase.
     var rndRe = new Float32Array(FFT_SIZE);
     var rndIm = new Float32Array(FFT_SIZE);
-    ArrayMath.random(rndRe, -1.0, 1.0);
-    ArrayMath.mul(rndIm, rndRe, rndRe);
-    ArrayMath.sub(rndIm, 1, rndIm);
-    ArrayMath.sqrt(rndIm, rndIm);       // im = sqrt(1 - re²)
+    ArrayMath.random(rndRe, 0, 2 * Math.PI);
+    ArrayMath.sin(rndIm, rndRe);
+    ArrayMath.cos(rndRe, rndRe);
     ArrayMath.mul(m_spectrum.im, m_spectrum.re, rndIm);
     ArrayMath.mul(m_spectrum.re, m_spectrum.re, rndRe);
 
@@ -166,7 +191,23 @@ function Demo() {
     ArrayMath.mul(m_wave.right, 1 / peak, m_wave.right);
 
     var t = (new Date()) - t0;
+
+    createSound();
+
     alert("Generated " + (harmonic - 1) + " harmonics in " + t + " ms");
+  };
+
+  this.play = function () {
+    if (!m_audioContext) {
+      return;
+    }
+    var node = m_audioContext.createBufferSource();
+    node.buffer = m_audioBuffer;
+    node.connect(m_audioContext.destination);
+    if (node.noteOn)
+      node.noteOn(0);
+    else
+      node.start();
   };
 
 }
@@ -193,6 +234,7 @@ Width:<br />
 </div>
 <div>
 <input type="submit" value="Generate" onclick="demo.generate()" />
+<input type="submit" value="Play" onclick="demo.play()" />
 </div>
 </body>
 </html>
