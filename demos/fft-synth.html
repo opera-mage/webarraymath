@@ -1,0 +1,199 @@
+<html>
+<head>
+<title>Web Array Math API - Sound synthesis</title>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+}
+#editor {
+  width: 680px;
+  border: 1px solid #888;
+  background: #f8f8ff;
+  border-radius: 5px;
+  padding: 10px;
+}
+#buttons-right {
+  float: right;
+}
+</style>
+<script type="text/javascript" src="../polyfill/webarraymath.js"></script>
+<script type="text/javascript">
+"use strict";
+
+function Demo() {
+
+  var PROFILE_SIZE = 256;
+  var FFT_SIZE = 262144;
+  var SAMPLE_RATE = 44100;
+  var NOTE_FREQ = 220;
+
+  var m_canvas = {
+    ctx: null,
+    width: 0,
+    height: 0
+  };
+
+  var m_profile_type = 'flat';
+  var m_profile_size = 0.25;
+  var m_profile = new Float32Array(PROFILE_SIZE);
+
+  var m_spectrum = {
+    re: new Float32Array(FFT_SIZE),
+    im: new Float32Array(FFT_SIZE)
+  };
+  var m_wave = {
+    left: new Float32Array(FFT_SIZE),
+    right: new Float32Array(FFT_SIZE)
+  };
+  var m_fft = new FFT(FFT_SIZE);
+
+  this.init = function () {
+    var canvas = document.getElementById("canvas");
+    m_canvas.ctx = canvas.getContext("2d");
+    m_canvas.width = canvas.width;
+    m_canvas.height = canvas.height;
+
+    document.getElementById("profileWidth").addEventListener("change", updateProfileWidth, false);
+    updateProfileWidth();
+  };
+
+  var updateProfileWidth = function (e) {
+    m_profile_size = document.getElementById("profileWidth").value / 255;
+    generateProfile();
+    drawProfile();
+  };
+
+  var drawProfile = function () {
+    var ctx = m_canvas.ctx;
+    var w = m_canvas.width;
+    var h = m_canvas.height;
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgb(40, 40, 100)";
+    ctx.strokeStyle = "rgb(40, 40, 100)";
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    for (var i = 0; i < PROFILE_SIZE; ++i) {
+      var x = (i / PROFILE_SIZE) * w;
+      var y = h - 2 - m_profile[i] * (h - 4);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(w, h+1);
+    ctx.lineTo(0, h+1);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  var generateProfile = function () {
+    ArrayMath.ramp(m_profile, -1 / m_profile_size, 1 / m_profile_size);
+    if (m_profile_type == 'gaussian') {
+      // y = e^(-x²)
+      ArrayMath.mul(m_profile, m_profile, m_profile);
+      ArrayMath.sub(m_profile, 0, m_profile);
+      ArrayMath.exp(m_profile, m_profile);
+    }
+    else {
+      for (var i = 0; i < PROFILE_SIZE; ++i) {
+        var x = m_profile[i];
+        m_profile[i] = x >= -1.0 && x <= 1.0 ? 1 : 0;
+      }
+    }
+  };
+
+  this.setHarmonicProfile = function (profile) {
+    m_profile_type = profile;
+    generateProfile();
+    drawProfile();
+  };
+
+  this.generate = function () {
+    var t0 = new Date();
+
+    // Start by clearing the spectrum.
+    ArrayMath.fill(m_spectrum.re, 0);
+    ArrayMath.fill(m_spectrum.im, 0);
+
+    var harmonicData = new Float32Array(FFT_SIZE / 2);
+    var harmonicDataIdx = new Float32Array(FFT_SIZE / 2);
+
+    // Generate all harmonics.
+    var fs0 = NOTE_FREQ / SAMPLE_RATE;
+    var fs = fs0;
+    var harmonic = 1;
+    while (fs < 0.5) {
+      // Uh, what is this?
+      var formants = Math.exp(-Math.pow((harmonic * NOTE_FREQ - 600.0) / 150.0, 2.0)) +
+                     Math.exp(-Math.pow((harmonic * NOTE_FREQ - 900.0) / 250.0, 2.0)) +
+                     Math.exp(-Math.pow((harmonic * NOTE_FREQ - 2200.0) / 200.0, 2.0)) +
+                     Math.exp(-Math.pow((harmonic * NOTE_FREQ - 2600.0) / 250.0, 2.0)) +
+                     Math.exp(-Math.pow((harmonic * NOTE_FREQ) / 3000.0, 2.0)) * 0.1;
+      var amplitude = formants / harmonic;
+
+      // Stretch the harmonic profile to the frequency specturm.
+      ArrayMath.ramp(harmonicDataIdx, 0, (PROFILE_SIZE - 1) / (2 * fs));
+      ArrayMath.sampleLinear(harmonicData, m_profile, harmonicDataIdx);
+
+      // Append this (stretched) harmonic to the total frequency response.
+      ArrayMath.madd(m_spectrum.re, amplitude, harmonicData, m_spectrum.re);
+
+      fs += fs0;
+      harmonic++;
+    }
+
+    // Construct full frequency response (mirror).
+    for (var k = (FFT_SIZE / 2); k >= 0; k--) {
+      m_spectrum.re[FFT_SIZE - 1 - k] = m_spectrum.re[k];
+    }
+
+    // Randomize the phase.
+    var rndRe = new Float32Array(FFT_SIZE);
+    var rndIm = new Float32Array(FFT_SIZE);
+    ArrayMath.random(rndRe, -1.0, 1.0);
+    ArrayMath.mul(rndIm, rndRe, rndRe);
+    ArrayMath.sub(rndIm, 1, rndIm);
+    ArrayMath.sqrt(rndIm, rndIm);       // im = sqrt(1 - re²)
+    ArrayMath.mul(m_spectrum.im, m_spectrum.re, rndIm);
+    ArrayMath.mul(m_spectrum.re, m_spectrum.re, rndRe);
+
+    // Inverse fourier transform!
+    m_fft.inverseCplx(m_wave.left, m_wave.right, m_spectrum.re, m_spectrum.im);
+
+    // Normalize.
+    var mx = Math.max(ArrayMath.max(m_wave.left), ArrayMath.max(m_wave.right));
+    var mn = Math.min(ArrayMath.min(m_wave.left), ArrayMath.min(m_wave.right));
+    var peak = Math.max(Math.abs(mx), Math.abs(mn));
+    ArrayMath.mul(m_wave.left, 1 / peak, m_wave.left);
+    ArrayMath.mul(m_wave.right, 1 / peak, m_wave.right);
+
+    var t = (new Date()) - t0;
+    alert("Generated " + (harmonic - 1) + " harmonics in " + t + " ms");
+  };
+
+}
+
+var demo = new Demo();
+</script>
+</head>
+<body onload="demo.init()">
+<h2>Web Array Math API - Sound synthesis</h2>
+<p>This demo is based on the
+<a href="http://zynaddsubfx.sourceforge.net/doc/PADsynth/PADsynth.htm">PADsynth algorithm</a>
+by Paul Nasca.</p>
+<div id="editor">
+<div id="buttons-right">
+Harmonic profile:<br />
+<input type="submit" value="Flat" onclick="demo.setHarmonicProfile('flat')" />
+<input type="submit" value="Gaussian" onclick="demo.setHarmonicProfile('gaussian')" />
+<br /><br />
+Width:<br />
+<input id="profileWidth" type="range" name="points" min="1" max="256" value="10" style="width: 100px" />
+</p>
+</div>
+<canvas id="canvas" width="512" height="256"></canvas>
+</div>
+<div>
+<input type="submit" value="Generate" onclick="demo.generate()" />
+</div>
+</body>
+</html>
+
