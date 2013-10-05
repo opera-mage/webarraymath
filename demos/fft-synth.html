@@ -15,6 +15,11 @@ body {
 #buttons-right {
   float: right;
 }
+#output {
+  font-family: monospace;
+  color: #888;
+  font-size: 8pt;
+}
 </style>
 <script type="text/javascript" src="../polyfill/webarraymath.js"></script>
 <script type="text/javascript">
@@ -33,7 +38,7 @@ function Demo() {
     height: 0
   };
 
-  var m_profile_type = 'flat';
+  var m_profile_type = 'gaussian';
   var m_profile_size = 0.25;
   var m_profile = new Float32Array(PROFILE_SIZE);
 
@@ -49,6 +54,10 @@ function Demo() {
 
   var m_audioContext;
   var m_audioBuffer;
+
+  var showStatus = function (msg) {
+    document.getElementById("output").innerHTML = msg;
+  };
 
   this.init = function () {
     // Initialize canvas.
@@ -74,7 +83,7 @@ function Demo() {
   };
 
   var updateProfileWidth = function (e) {
-    m_profile_size = document.getElementById("profileWidth").value / 255;
+    m_profile_size = document.getElementById("profileWidth").value / 512;
     generateProfile();
     drawProfile();
   };
@@ -194,7 +203,7 @@ function Demo() {
 
     createSound();
 
-    alert("Generated " + (harmonic - 1) + " harmonics in " + t + " ms");
+    showStatus("Generated " + (harmonic - 1) + " harmonics in " + t + " ms");
   };
 
   this.play = function () {
@@ -223,11 +232,11 @@ by Paul Nasca.</p>
 <div id="editor">
 <div id="buttons-right">
 Harmonic profile:<br />
-<input type="submit" value="Flat" onclick="demo.setHarmonicProfile('flat')" />
 <input type="submit" value="Gaussian" onclick="demo.setHarmonicProfile('gaussian')" />
+<input type="submit" value="Flat" onclick="demo.setHarmonicProfile('flat')" />
 <br /><br />
 Width:<br />
-<input id="profileWidth" type="range" name="points" min="1" max="256" value="10" style="width: 100px" />
+<input id="profileWidth" type="range" name="points" min="3" max="256" value="10" style="width: 120px" />
 </p>
 </div>
 <canvas id="canvas" width="512" height="256"></canvas>
@@ -235,6 +244,7 @@ Width:<br />
 <div>
 <input type="submit" value="Generate" onclick="demo.generate()" />
 <input type="submit" value="Play" onclick="demo.play()" />
+<span id="output"></span>
 </div>
 </body>
 </html>
