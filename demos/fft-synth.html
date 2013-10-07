@@ -5,8 +5,11 @@
 body {
   font-family: sans-serif;
 }
+#canvas {
+  cursor: crosshair;
+}
 #editor {
-  width: 680px;
+  width: 750px;
   border: 1px solid #888;
   background: #f8f8ff;
   border-radius: 5px;
@@ -55,6 +58,8 @@ function Demo() {
   var m_audioContext;
   var m_audioBuffer;
 
+  var m_editing = false;
+
   var showStatus = function (msg) {
     document.getElementById("output").innerHTML = msg;
   };
@@ -78,14 +83,66 @@ function Demo() {
     }
 
     // Generate initial harmonic profile.
-    document.getElementById("profileWidth").addEventListener("change", updateProfileWidth, false);
     updateProfileWidth();
+
+    // Set up event handlers.
+    document.getElementById("profileWidth").addEventListener("change", updateProfileWidth, false);
+    document.getElementById("canvas").addEventListener("mousedown", mouseDown, false);
+    document.getElementById("canvas").addEventListener("mousemove", mouseMove, false);
+    document.getElementById("canvas").addEventListener("mouseup", mouseUp, false);
+    document.getElementById("canvas").addEventListener("mouseout", mouseOut, false);
   };
 
   var updateProfileWidth = function (e) {
     m_profile_size = document.getElementById("profileWidth").value / 512;
     generateProfile();
     drawProfile();
+  };
+
+  var fixMouseEvent = function (e) {
+    // Add pageX/pageY if not present.
+	  if (e.pageX == null && original.clientX != null) {
+      eventDoc = e.target.ownerDocument || document;
+      doc = eventDoc.documentElement;
+      body = eventDoc.body;
+      e.pageX = original.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && body.clientLeft || 0 );
+      e.pageY = original.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && body.clientTop || 0 );
+    }
+
+    // Cross browser offsetX/offsetY.
+    var target = e.target || e.srcElement,
+        rect = target.getBoundingClientRect();
+    e.offsetX = e.clientX - rect.left;
+    e.offsetY = e.clientY - rect.top;
+  };
+
+  var editProfile = function (e) {
+    var i = Math.round(PROFILE_SIZE * (e.offsetX / m_canvas.width));
+    if (i < 0 || i >= PROFILE_SIZE)
+      return;
+    m_profile[i] = (m_canvas.height - e.offsetY) / m_canvas.height;
+    drawProfile();
+  };
+
+  var mouseDown = function (e) {
+    fixMouseEvent(e);
+    editProfile(e);
+    m_editing = true;
+  };
+
+  var mouseMove = function (e) {
+    if (!m_editing)
+      return;
+    fixMouseEvent(e);
+    editProfile(e);
+  };
+
+  var mouseUp = function (e) {
+    m_editing = false;
+  };
+
+  var mouseOut = function (e) {
+    m_editing = false;
   };
 
   var drawProfile = function () {
@@ -117,11 +174,14 @@ function Demo() {
       ArrayMath.sub(m_profile, 0, m_profile);
       ArrayMath.exp(m_profile, m_profile);
     }
-    else {
+    else if (m_profile_type == 'flat') {
       for (var i = 0; i < PROFILE_SIZE; ++i) {
         var x = m_profile[i];
         m_profile[i] = x >= -1.0 && x <= 1.0 ? 1 : 0;
       }
+    }
+    else {
+      ArrayMath.fill(m_profile, 0);
     }
   };
 
@@ -196,8 +256,10 @@ function Demo() {
     var mx = Math.max(ArrayMath.max(m_wave.left), ArrayMath.max(m_wave.right));
     var mn = Math.min(ArrayMath.min(m_wave.left), ArrayMath.min(m_wave.right));
     var peak = Math.max(Math.abs(mx), Math.abs(mn));
-    ArrayMath.mul(m_wave.left, 1 / peak, m_wave.left);
-    ArrayMath.mul(m_wave.right, 1 / peak, m_wave.right);
+    if (peak > 0) {
+      ArrayMath.mul(m_wave.left, 1 / peak, m_wave.left);
+      ArrayMath.mul(m_wave.right, 1 / peak, m_wave.right);
+    }
 
     var t = (new Date()) - t0;
 
@@ -234,6 +296,7 @@ by Paul Nasca.</p>
 Harmonic profile:<br />
 <input type="submit" value="Gaussian" onclick="demo.setHarmonicProfile('gaussian')" />
 <input type="submit" value="Flat" onclick="demo.setHarmonicProfile('flat')" />
+<input type="submit" value="Clear" onclick="demo.setHarmonicProfile('clear')" />
 <br /><br />
 Width:<br />
 <input id="profileWidth" type="range" name="points" min="3" max="256" value="10" style="width: 120px" />
