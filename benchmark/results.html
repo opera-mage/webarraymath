@@ -1,31 +1,103 @@
 <html>
 <head>
 <title>Web Array Math API benchmark results</title>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+  google.load("visualization", "1", {packages:["corechart"]});
+
+function drawChart() {
+  var results = [];
+  results.push({
+    title: "Intel(R) Xeon(R) E5-1620 (quad core) @ 3.60GHz",
+    data:  google.visualization.arrayToDataTable(
+      // TODO(mage): Build this at run-time from several arrays.
+      [
+        ['Operation', 'Opera [native API]', 'Chromium 28 [JS]'],
+        ['add', 3863.2, 393.6],
+        ['sub', 4055.2, 392.5],
+        ['mul', 4153.8, 395.5],
+        ['mulCplx', 1670.5, 178.4],
+        ['div', 944.5, 162.4],
+        ['divCplx', 220.6, 149.0],
+        ['madd', 4066.0, 353.2],
+        ['abs', 6025.3, 451.0],
+        ['absCplx', 255.5, 173.5],
+        ['acos', 118.6, 23.3],
+        ['asin', 106.8, 23.5],
+        ['atan', 105.9, 23.6],
+        ['atan2', 68.1, 15.7],
+        ['ceil', 6213.0, 57.1],
+        ['cos', 233.2, 28.0],
+        ['exp', 271.2, 219.2],
+        ['floor', 5858.9, 363.0],
+        ['log', 251.2, 43.6],
+        ['max', 7659.6, 404.9],
+        ['min', 7721.6, 452.7],
+        ['pow', 15.4, 155.6],
+        ['random', 569.0, 188.9],
+        ['round', 6208.5, 39.9],
+        ['sin', 232.8, 27.7],
+        ['sqrt', 3216.8, 177.5],
+        ['tan', 5.1, 23.2],
+        ['clamp', 5528.9, 311.6],
+        ['fract', 6133.4, 362.2],
+        ['fill', 6794.7, 601.2],
+        ['ramp', 5290.0, 244.3],
+        ['sign', 5763.7, 344.8],
+        ['sum', 1127.6, 720.7],
+        ['sampleLinear', 508.9, 146.6],
+        ['sampleLinearRepeat', 93.2, 99.7],
+        ['sampleCubic', 76.5, 91.5],
+        ['sampleCubicRepeat', 54.0, 48.6],
+        ['pack', 383.5, 129.8],
+        ['unpack', 236.5, 113.3],
+        ['filter(1st order IIR)', 444.2, 178.5],
+        ['filter(biquad)', 356.8, 212.5],
+        ['filter(32-tab FIR)', 31.7, 14.2],
+        ['FFT(256)', 118.8, 24.0],
+        ['FFT(2048)', 123.4, 17.9]
+      ]
+    )
+  });
+
+  var width = 1300;
+  var height = 2000;
+
+  var options = {
+    title: results[0].title,
+    vAxis: { title: 'Operation',  titleTextStyle: {color: 'red'} },
+    hAxis: { title: 'Processing speed (higher is better) [Ms/s]',  titleTextStyle: {color: 'red'} },
+    chartArea: { left: 250, top: 80, height: height - 200 }
+  };
+
+  var chartDiv = document.createElement("div");
+  chartDiv.style.width = "" + width + "px";
+  chartDiv.style.height = "" + height + "px";
+  chartDiv.style.position = "position";
+  document.getElementById('charts').appendChild(chartDiv);
+
+  var chart = new google.visualization.BarChart(chartDiv);
+  chart.draw(results[0].data, options);
+}
+</script>
 <style type="text/css">
 body {
   font-family: sans-serif;
 }
-.figure {
-  width: 100%;
-  text-align: center;
-}
 </style>
 </head>
-<body>
+<body onload="drawChart()">
 <h2>Web Array Math API benchmark results</h2>
 
-<h3>x86 - quad core i7</h3>
+<p>These are some early benchmark results from an experimental (internal) Opera
+build with a native Web Array Math API implementation. For comparison, results
+from Chromium 28.0.1500.71 are included (using the JavaScript polyfill).</p>
 
-<p>The average speedup (for the tested methods) when using a Web Array Math API
-enabled version of Chromium is 25x compared to stock JavaScript in Chromium.</p>
+<p>Please note that many optimizations remain to be done in the native
+implementation.</p>
 
-<div class="figure">
-<img src="performance-x86-absolute.png" />
-</div>
-
-<div class="figure">
-<img src="performance-x86-relative.png" />
-</div>
+<h3>2013-Oct-08</h3>
+<div id="charts"></div>
 
 </body>
 </html>
