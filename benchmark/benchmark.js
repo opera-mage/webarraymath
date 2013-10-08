@@ -302,10 +302,11 @@ function Benchmark(println) {
 
   // pow
   ArrayMath.ramp(x, 1, 1000);
+  ArrayMath.ramp(y, 1.1, 99.9);
   dt = 0;
   for (k = 0; k < MIN_ITERATIONS || dt < MIN_DT; ++k) {
     t0 = time();
-    ArrayMath.pow(z, x, 3);
+    ArrayMath.pow(z, x, y);
     dt += time() - t0;
   }
   total_t += dt;
