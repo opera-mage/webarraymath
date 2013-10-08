@@ -254,57 +254,39 @@
 
     <section>
       <h2>ArrayMath interface</h2>
-      <div class="issue">
-        We should probably add offset indexes to most of the methods, to allow
-        for operating on only a part of the destination array.
-      </div>
       <dl title='interface ArrayMath' class='idl'>
         <!-- Arithmetic operations -->
-        <dt>void add (Float32Array dst, double x, Float32Array y)</dt>
-        <dd>
-          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length)</code>,
-          the method MUST compute <code>dst[k] = x + y[k]</code>.
-        </dd>
         <dt>void add (Float32Array dst, Float32Array x, Float32Array y)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length)</code>,
           the method MUST compute <code>dst[k] = x[k] + y[k]</code>.
         </dd>
-
-        <dt>void sub (Float32Array dst, double x, Float32Array y)</dt>
+        <dt>void add (Float32Array dst, double x, Float32Array y)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length)</code>,
-          the method MUST compute <code>dst[k] = x - y[k]</code>.
+          the method MUST compute <code>dst[k] = x + y[k]</code>.
         </dd>
+
         <dt>void sub (Float32Array dst, Float32Array x, Float32Array y)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length)</code>,
           the method MUST compute <code>dst[k] = x[k] - y[k]</code>.
         </dd>
-
-        <dt>void mul (Float32Array dst, double x, Float32Array y)</dt>
+        <dt>void sub (Float32Array dst, double x, Float32Array y)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length)</code>,
-          the method MUST compute <code>dst[k] = x * y[k]</code>.
+          the method MUST compute <code>dst[k] = x - y[k]</code>.
         </dd>
+
         <dt>void mul (Float32Array dst, Float32Array x, Float32Array y)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length)</code>,
           the method MUST compute <code>dst[k] = x[k] * y[k]</code>.
         </dd>
-        <dt>void mulCplx (Float32Array dstReal, Float32Array dstImag, double xReal, double xImag, Float32Array yReal, Float32Array yImag)</dt>
+        <dt>void mul (Float32Array dst, double x, Float32Array y)</dt>
         <dd>
-          <div class="note">
-            This method performs multiplication of a complex scalar and a complex array.
-          </div>
-          <p>
-            For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dstReal.length, dstImag.length, yReal.length, yImag.length)</code>,
-            the method MUST compute:
-          </p>
-          <pre class="sh_sourceCode">
-dstReal[k] = xReal * yReal[k] - xImag * yImag[k]
-dstImag[k] = xReal * yImag[k] + xImag * yReal[k]
-          </pre>
+          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length)</code>,
+          the method MUST compute <code>dst[k] = x * y[k]</code>.
         </dd>
         <dt>void mulCplx (Float32Array dstReal, Float32Array dstImag, Float32Array xReal, Float32Array xImag, Float32Array yReal, Float32Array yImag)</dt>
         <dd>
@@ -320,31 +302,30 @@ dstReal[k] = xReal[k] * yReal[k] - xImag[k] * yImag[k]
 dstImag[k] = xReal[k] * yImag[k] + xImag[k] * yReal[k]
           </pre>
         </dd>
-
-        <dt>void div (Float32Array dst, double x, Float32Array y)</dt>
-        <dd>
-          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length)</code>,
-          the method MUST compute <code>dst[k] = x / y[k]</code>.
-        </dd>
-        <dt>void div (Float32Array dst, Float32Array x, Float32Array y)</dt>
-        <dd>
-          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length)</code>,
-          the method MUST compute <code>dst[k] = x[k] / y[k]</code>.
-        </dd>
-        <dt>void divCplx (Float32Array dstReal, Float32Array dstImag, double xReal, double xImag, Float32Array yReal, Float32Array yImag)</dt>
+        <dt>void mulCplx (Float32Array dstReal, Float32Array dstImag, double xReal, double xImag, Float32Array yReal, Float32Array yImag)</dt>
         <dd>
           <div class="note">
-            This method performs division of a complex scalar and a complex array.
+            This method performs multiplication of a complex scalar and a complex array.
           </div>
           <p>
             For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dstReal.length, dstImag.length, yReal.length, yImag.length)</code>,
             the method MUST compute:
           </p>
           <pre class="sh_sourceCode">
-denom = yReal[k] * yReal[k] + yImag[k] * yImag[k]
-dstReal[k] = (xReal * yReal[k] + xImag * yImag[k]) / denom
-dstImag[k] = (xImag * yReal[k] - xReal * yImag[k]) / denom
+dstReal[k] = xReal * yReal[k] - xImag * yImag[k]
+dstImag[k] = xReal * yImag[k] + xImag * yReal[k]
           </pre>
+        </dd>
+
+        <dt>void div (Float32Array dst, Float32Array x, Float32Array y)</dt>
+        <dd>
+          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length)</code>,
+          the method MUST compute <code>dst[k] = x[k] / y[k]</code>.
+        </dd>
+        <dt>void div (Float32Array dst, double x, Float32Array y)</dt>
+        <dd>
+          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length)</code>,
+          the method MUST compute <code>dst[k] = x / y[k]</code>.
         </dd>
         <dt>void divCplx (Float32Array dstReal, Float32Array dstImag, Float32Array xReal, Float32Array xImag, Float32Array yReal, Float32Array yImag)</dt>
         <dd>
@@ -361,16 +342,31 @@ dstReal[k] = (xReal[k] * yReal[k] + xImag[k] * yImag[k]) / denom
 dstImag[k] = (xImag[k] * yReal[k] - xReal[k] * yImag[k]) / denom
           </pre>
         </dd>
-
-        <dt>void madd (Float32Array dst, double x, Float32Array y, Float32Array z)</dt>
+        <dt>void divCplx (Float32Array dstReal, Float32Array dstImag, double xReal, double xImag, Float32Array yReal, Float32Array yImag)</dt>
         <dd>
-          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length, z.length)</code>,
-          the method MUST compute <code>dst[k] = x * y[k] + z[k]</code>.
+          <div class="note">
+            This method performs division of a complex scalar and a complex array.
+          </div>
+          <p>
+            For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dstReal.length, dstImag.length, yReal.length, yImag.length)</code>,
+            the method MUST compute:
+          </p>
+          <pre class="sh_sourceCode">
+denom = yReal[k] * yReal[k] + yImag[k] * yImag[k]
+dstReal[k] = (xReal * yReal[k] + xImag * yImag[k]) / denom
+dstImag[k] = (xImag * yReal[k] - xReal * yImag[k]) / denom
+          </pre>
         </dd>
+
         <dt>void madd (Float32Array dst, Float32Array x, Float32Array y, Float32Array z)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length, z.length)</code>,
           the method MUST compute <code>dst[k] = x[k] * y[k] + z[k]</code>.
+        </dd>
+        <dt>void madd (Float32Array dst, double x, Float32Array y, Float32Array z)</dt>
+        <dd>
+          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, y.length, z.length)</code>,
+          the method MUST compute <code>dst[k] = x * y[k] + z[k]</code>.
         </dd>
 
 
@@ -447,15 +443,15 @@ dstImag[k] = (xImag[k] * yReal[k] - xReal[k] * yImag[k]) / denom
           The method MUST return the smallest value among all the elements of the array <code>x</code>.
           If the array is empty, it MUST return ∞.
         </dd>
-        <dt>void pow (Float32Array dst, Float32Array x, double y)</dt>
-        <dd>
-          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length)</code>,
-          the method MUST compute <code>dst[k] = pow(x[k], y)</code>.
-        </dd>
         <dt>void pow (Float32Array dst, Float32Array x, Float32Array y)</dt>
         <dd>
           For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length, y.length)</code>,
           the method MUST compute <code>dst[k] = pow(x[k], y[k])</code>.
+        </dd>
+        <dt>void pow (Float32Array dst, Float32Array x, double y)</dt>
+        <dd>
+          For each <code>k</code> in the range <code>0</code> &le; <code>k</code> &lt; <code>min(dst.length, x.length)</code>,
+          the method MUST compute <code>dst[k] = pow(x[k], y)</code>.
         </dd>
         <dt>void random (Float32Array dst, optional double low=0, optional double high=1)</dt>
         <dd>
@@ -943,11 +939,6 @@ end
         The element layout of the frequency domain (forward transform) has
         to be defined.
       </div>
-      <div class="issue">
-        We should probably add offset indexes to the forward/inverse
-        methods, to allow for doing FFT:s of partial arrays without having to
-        resort to memory copying or using sub-arrays.
-      </div>
       <p>
         The <code>FFT()</code> constructor, when invoked, MUST return a newly
         created <code>FFT</code> object.
@@ -1111,9 +1102,6 @@ function hamming (size) {
   return w;
 }
       </pre>
-      <div class="issue">
-        Add more examples, especially examples of using the FFT interface.
-      </div>
     </section>
   </body>
 </html>
