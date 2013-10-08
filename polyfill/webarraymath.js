@@ -348,11 +348,14 @@
   };
 
   ArrayMath.pack = function (dst, offset, stride, src1, src2, src3, src4) {
-    var dstCount = Math.floor((dst.length - offset) / stride);
+    var dstCount = Math.floor(Math.max(0, (dst.length - offset)) / stride);
     var count = Math.min(dstCount, src1.length);
-    if (src2)
-      if (src3)
-        if (src4)
+    if (src2) {
+      var count = Math.min(count, src2.length);
+      if (src3) {
+        var count = Math.min(count, src3.length);
+        if (src4) {
+          var count = Math.min(count, src4.length);
           for (var k = 0; k < count; ++k) {
             dst[offset] = src1[k];
             dst[offset + 1] = src2[k];
@@ -360,6 +363,7 @@
             dst[offset + 3] = src4[k];
             offset += stride;
           }
+        }
         else
           for (var k = 0; k < count; ++k) {
             dst[offset] = src1[k];
@@ -367,12 +371,14 @@
             dst[offset + 2] = src3[k];
             offset += stride;
           }
+      }
       else
         for (var k = 0; k < count; ++k) {
           dst[offset] = src1[k];
           dst[offset + 1] = src2[k];
           offset += stride;
         }
+    }
     else
       for (var k = 0; k < count; ++k) {
         dst[offset] = src1[k];
@@ -381,11 +387,14 @@
   };
 
   ArrayMath.unpack = function (src, offset, stride, dst1, dst2, dst3, dst4) {
-    var srcCount = Math.floor((src.length - offset) / stride);
+    var srcCount = Math.floor(Math.max(0, (src.length - offset)) / stride);
     var count = Math.min(srcCount, dst1.length);
-    if (dst2)
-      if (dst3)
-        if (dst4)
+    if (dst2) {
+      var count = Math.min(count, dst2.length);
+      if (dst3) {
+        var count = Math.min(count, dst3.length);
+        if (dst4) {
+          var count = Math.min(count, dst4.length);
           for (var k = 0; k < count; ++k) {
             dst1[k] = src[offset];
             dst2[k] = src[offset + 1];
@@ -393,6 +402,7 @@
             dst4[k] = src[offset + 3];
             offset += stride;
           }
+        }
         else
           for (var k = 0; k < count; ++k) {
             dst1[k] = src[offset];
@@ -400,12 +410,14 @@
             dst3[k] = src[offset + 2];
             offset += stride;
           }
+      }
       else
         for (var k = 0; k < count; ++k) {
           dst1[k] = src[offset];
           dst2[k] = src[offset + 1];
           offset += stride;
         }
+    }
     else
       for (var k = 0; k < count; ++k) {
         dst1[k] = src[offset];
