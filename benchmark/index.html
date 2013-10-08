@@ -5,13 +5,16 @@
 <script type="text/javascript" src="benchmark.js"></script>
 <script type="text/javascript">
 function Run() {
+  var text = "";
+  var println = function (msg) {
+    text += msg + "\n"
+  };
   try {
-    Benchmark(function (msg) {
-      document.getElementById("output").textContent += msg + "\n";
-    });
+    Benchmark(println);
   } catch (err) {
-    document.getElementById("output").textContent += err.message + "\n";
+    println(err.message);
   }
+  document.getElementById("output").textContent += text;
 }
 
 function RunInWorker() {
