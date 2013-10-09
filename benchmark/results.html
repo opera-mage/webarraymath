@@ -5,66 +5,228 @@
 <script type="text/javascript">
   google.load("visualization", "1", {packages:["corechart"]});
 
+function makeDataTable(results) {
+  var array = [['Operation']];
+  array[0].push(results[0].browser);
+  for (var i = 0; i < results[0].operations.length; ++i) {
+    var row = [];
+    row.push(results[0].operations[i][0]);
+    row.push(results[0].operations[i][1]);
+    array.push(row);
+  }
+
+  for (var k = 1; k < results.length; ++k) {
+    array[0].push(results[k].browser);
+    for (var i = 0; i < results[k].operations.length; ++i) {
+      if (array[i+1][0] != results[k].operations[i][0])
+        alert("Wrong operation: " + results[k].operations[i][0]);
+      array[i+1].push(results[k].operations[i][1]);
+    }
+  }
+
+  return google.visualization.arrayToDataTable(array);
+}
+
 function drawChart() {
   var results = [];
   results.push({
-    title: "Intel(R) Xeon(R) E5-1620 (quad core) @ 3.60GHz",
-    data:  google.visualization.arrayToDataTable(
-      // TODO(mage): Build this at run-time from several arrays.
-      [
-        ['Operation', 'Opera [native API]', 'Chromium 28 [JS]'],
-        ['add', 4185.1, 393.6],
-        ['sub', 4055.2, 392.5],
-        ['mul', 4153.8, 395.5],
-        ['mulCplx', 1670.5, 178.4],
-        ['div', 944.5, 162.4],
-        ['divCplx', 220.6, 149.0],
-        ['madd', 4298.6, 353.2],
-        ['abs', 6025.3, 451.0],
-        ['absCplx', 1238.1, 173.5],
-        ['acos', 121.1, 23.3],
-        ['asin', 106.8, 23.5],
-        ['atan', 105.9, 23.6],
-        ['atan2', 68.1, 15.7],
-        ['ceil', 6338.3, 57.1],
-        ['cos', 236.4, 28.0],
-        ['exp', 274.3, 219.2],
-        ['floor', 6252.8, 363.0],
-        ['log', 253.5, 43.6],
-        ['max', 7757.8, 404.9],
-        ['min', 7948.0, 452.7],
-        ['pow', 86.2, 15.1],
-        ['random', 664.1, 188.9],
-        ['round', 6350.2, 39.9],
-        ['sin', 237.9, 27.7],
-        ['sqrt', 3354.7, 177.5],
-        ['tan', 174.9, 23.2],
-        ['clamp', 5682.7, 311.6],
-        ['fract', 6133.4, 362.2],
-        ['fill', 6794.7, 601.2],
-        ['ramp', 5290.0, 244.3],
-        ['sign', 6061.9, 344.8],
-        ['sum', 3624.7, 720.7],
-        ['sampleLinear', 512.2, 146.6],
-        ['sampleLinearRepeat', 511.0, 99.7],
-        ['sampleCubic', 76.5, 91.5],
-        ['sampleCubicRepeat', 54.0, 48.6],
-        ['pack', 383.5, 129.8],
-        ['unpack', 236.5, 113.3],
-        ['filter(1st order IIR)', 454.2, 178.5],
-        ['filter(biquad)', 361.5, 212.5],
-        ['filter(32-tab FIR)', 63.1, 14.2],
-        ['FFT(256)', 120.0, 24.0],
-        ['FFT(2048)', 125.8, 17.9]
-      ]
-    )
+    browser: 'Opera [native API]',
+    operations: [
+      ['add', 4185.1],
+      ['sub', 4055.2],
+      ['mul', 4153.8],
+      ['mulCplx', 1670.5],
+      ['div', 944.5],
+      ['divCplx', 220.6],
+      ['madd', 4298.6],
+      ['abs', 6025.3],
+      ['absCplx', 1238.1],
+      ['acos', 121.1],
+      ['asin', 106.8],
+      ['atan', 105.9],
+      ['atan2', 68.1],
+      ['ceil', 6338.3],
+      ['cos', 236.4],
+      ['exp', 274.3],
+      ['floor', 6252.8],
+      ['log', 253.5],
+      ['max', 7757.8],
+      ['min', 7948.0],
+      ['pow', 86.2],
+      ['random', 664.1],
+      ['round', 6350.2],
+      ['sin', 237.9],
+      ['sqrt', 3354.7],
+      ['tan', 174.9],
+      ['clamp', 5682.7],
+      ['fract', 6133.4],
+      ['fill', 6794.7],
+      ['ramp', 5290.0],
+      ['sign', 6061.9],
+      ['sum', 3624.7],
+      ['sampleLinear', 512.2],
+      ['sampleLinearRepeat', 511.0],
+      ['sampleCubic', 76.5],
+      ['sampleCubicRepeat', 54.0],
+      ['pack', 383.5],
+      ['unpack', 236.5],
+      ['filter(1st order IIR)', 454.2],
+      ['filter(biquad)', 361.5],
+      ['filter(32-tab FIR)', 63.1],
+      ['FFT(256)', 120.0],
+      ['FFT(2048)', 125.8]
+    ]
+  });
+  results.push({
+    browser: 'Chromium 28 64-bit [JS]',
+    operations: [
+      ['add', 393.6],
+      ['sub', 392.5],
+      ['mul', 395.5],
+      ['mulCplx', 178.4],
+      ['div', 162.4],
+      ['divCplx', 149.0],
+      ['madd', 353.2],
+      ['abs', 451.0],
+      ['absCplx', 173.5],
+      ['acos', 23.3],
+      ['asin', 23.5],
+      ['atan', 23.6],
+      ['atan2', 15.7],
+      ['ceil', 57.1],
+      ['cos', 28.0],
+      ['exp', 219.2],
+      ['floor', 363.0],
+      ['log', 43.6],
+      ['max', 404.9],
+      ['min', 452.7],
+      ['pow', 15.1],
+      ['random', 188.9],
+      ['round', 39.9],
+      ['sin', 27.7],
+      ['sqrt', 177.5],
+      ['tan', 23.2],
+      ['clamp', 311.6],
+      ['fract', 362.2],
+      ['fill', 601.2],
+      ['ramp', 244.3],
+      ['sign', 344.8],
+      ['sum', 720.7],
+      ['sampleLinear', 146.6],
+      ['sampleLinearRepeat', 99.7],
+      ['sampleCubic', 91.5],
+      ['sampleCubicRepeat', 48.6],
+      ['pack', 129.8],
+      ['unpack', 113.3],
+      ['filter(1st order IIR)', 178.5],
+      ['filter(biquad)', 212.5],
+      ['filter(32-tab FIR)', 14.2],
+      ['FFT(256)', 24.0],
+      ['FFT(2048)', 17.9]
+    ]
+  });
+  results.push({
+    browser: 'Chrome 31 32-bit [JS]',
+    operations: [
+      ['add', 235.5],
+      ['sub', 237.0],
+      ['mul', 224.3],
+      ['mulCplx', 127.2],
+      ['div', 164.2],
+      ['divCplx', 113.0],
+      ['madd', 222.0],
+      ['abs', 245.3],
+      ['absCplx', 170.9],
+      ['acos', 13.0],
+      ['asin', 12.8],
+      ['atan', 15.2],
+      ['atan2', 14.2],
+      ['ceil', 31.5],
+      ['cos', 26.3],
+      ['exp', 146.2],
+      ['floor', 192.7],
+      ['log', 47.8],
+      ['max', 393.5],
+      ['min', 438.0],
+      ['pow', 14.8],
+      ['random', 189.2],
+      ['round', 35.6],
+      ['sin', 25.7],
+      ['sqrt', 173.7],
+      ['tan', 22.1],
+      ['clamp', 206.5],
+      ['fract', 197.9],
+      ['fill', 676.2],
+      ['ramp', 298.3],
+      ['sign', 210.0],
+      ['sum', 572.2],
+      ['sampleLinear', 86.9],
+      ['sampleLinearRepeat', 76.1],
+      ['sampleCubic', 65.7],
+      ['sampleCubicRepeat', 49.6],
+      ['pack', 127.5],
+      ['unpack', 126.9],
+      ['filter(1st order IIR)', 173.3],
+      ['filter(biquad)', 291.9],
+      ['filter(32-tab FIR)', 13.0],
+      ['FFT(256)', 24.4],
+      ['FFT(2048)', 17.3]
+    ]
+  });
+  results.push({
+    browser: 'Firefox 27 [JS]',
+    operations: [
+      ['add', 901.0],
+      ['sub', 887.4],
+      ['mul', 901.0],
+      ['mulCplx', 244.0],
+      ['div', 268.1],
+      ['divCplx', 155.4],
+      ['madd', 289.5],
+      ['abs', 92.1],
+      ['absCplx', 107.4],
+      ['acos', 50.9],
+      ['asin', 50.4],
+      ['atan', 19.8],
+      ['atan2', 10.3],
+      ['ceil', 84.5],
+      ['cos', 19.0],
+      ['exp', 20.2],
+      ['floor', 84.2],
+      ['log', 22.0],
+      ['max', 733.5],
+      ['min', 619.5],
+      ['pow', 12.7],
+      ['random', 126.9],
+      ['round', 67.9],
+      ['sin', 19.2],
+      ['sqrt', 144.8],
+      ['tan', 17.0],
+      ['clamp', 535.7],
+      ['fract', 81.9],
+      ['fill', 1780.6],
+      ['ramp', 532.4],
+      ['sign', 566.8],
+      ['sum', 735.3],
+      ['sampleLinear', 58.7],
+      ['sampleLinearRepeat', 102.2],
+      ['sampleCubic', 45.2],
+      ['sampleCubicRepeat', 49.6],
+      ['pack', 0],
+      ['unpack', 234.5],
+      ['filter(1st order IIR)', 169.1],
+      ['filter(biquad)', 206.7],
+      ['filter(32-tab FIR)', 11.0],
+      ['FFT(256)', 23.7],
+      ['FFT(2048)', 6.7]
+    ]
   });
 
-  var width = 1300;
-  var height = 2000;
+  var width = 1500;
+  var height = 3000;
 
   var options = {
-    title: results[0].title,
+    title: "Intel(R) Xeon(R) E5-1620 (quad core) @ 3.60GHz",
     vAxis: { title: 'Operation',  titleTextStyle: {color: 'red'} },
     hAxis: { title: 'Processing speed (higher is better) [Ms/s]',  titleTextStyle: {color: 'red'} },
     chartArea: { left: 250, top: 80, height: height - 200 }
@@ -77,7 +239,7 @@ function drawChart() {
   document.getElementById('charts').appendChild(chartDiv);
 
   var chart = new google.visualization.BarChart(chartDiv);
-  chart.draw(results[0].data, options);
+  chart.draw(makeDataTable(results), options);
 }
 </script>
 <style type="text/css">
@@ -90,13 +252,15 @@ body {
 <h2>Web Array Math API benchmark results</h2>
 
 <p>These are some early benchmark results from an experimental (internal) Opera
-build with a native Web Array Math API implementation. For comparison, results
-from Chromium 28.0.1500.71 are included (using the JavaScript polyfill).</p>
+build with a native Web Array Math API implementation.</p>
+
+<p>For comparison, results from other browsers using the JavaScript polyfill
+are included.</p>
 
 <p>Please note that many optimizations remain to be done in the native
 implementation.</p>
 
-<h3>2013-Oct-08</h3>
+<h3>2013-Oct-09</h3>
 <div id="charts"></div>
 
 </body>
