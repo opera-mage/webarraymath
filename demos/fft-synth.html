@@ -120,6 +120,17 @@ function Demo() {
     e.offsetY = e.clientY - rect.top;
   };
 
+  var stopEventPropagation = function (e) {
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    } else {
+      e.cancelBubble = true;
+    }
+    if (e.preventDefault) {
+      e.preventDefault();
+    }
+  };
+
   var editProfile = function (e) {
     var i = Math.round(PROFILE_SIZE * (e.offsetX / m_canvas.width));
     if (i < 0 || i >= PROFILE_SIZE)
@@ -132,6 +143,7 @@ function Demo() {
     fixMouseEvent(e);
     editProfile(e);
     m_editing = true;
+    stopEventPropagation(e);
   };
 
   var mouseMove = function (e) {
@@ -139,16 +151,19 @@ function Demo() {
       return;
     fixMouseEvent(e);
     editProfile(e);
+    stopEventPropagation(e);
   };
 
   var mouseUp = function (e) {
     m_editing = false;
     generateAudioBuffer();
+    stopEventPropagation(e);
   };
 
   var mouseOut = function (e) {
     m_editing = false;
     generateAudioBuffer();
+    stopEventPropagation(e);
   };
 
   var playNote = function (n) {
@@ -231,11 +246,7 @@ function Demo() {
     }
     if (n >= 0) {
       playNote(n + m_octave * 12);
-      if (e.stopPropagation) {
-        e.stopPropagation();
-      } else {
-        e.cancelBubble = true;
-      }
+      stopEventPropagation(e);
     }
   };
 
