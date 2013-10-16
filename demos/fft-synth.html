@@ -45,6 +45,8 @@ function Demo() {
   var m_profile_size = 0.25;
   var m_profile = new Float32Array(PROFILE_SIZE);
 
+  var m_octave = 5;
+
   var m_spectrum = {
     re: new Float32Array(FFT_SIZE),
     im: new Float32Array(FFT_SIZE)
@@ -91,12 +93,14 @@ function Demo() {
     document.getElementById("canvas").addEventListener("mousemove", mouseMove, false);
     document.getElementById("canvas").addEventListener("mouseup", mouseUp, false);
     document.getElementById("canvas").addEventListener("mouseout", mouseOut, false);
+    document.addEventListener("keydown", keyDown, false);
   };
 
   var updateProfileWidth = function (e) {
     m_profile_size = document.getElementById("profileWidth").value / 512;
     generateProfile();
     drawProfile();
+    generateAudioBuffer();
   };
 
   var fixMouseEvent = function (e) {
@@ -139,10 +143,100 @@ function Demo() {
 
   var mouseUp = function (e) {
     m_editing = false;
+    generateAudioBuffer();
   };
 
   var mouseOut = function (e) {
     m_editing = false;
+    generateAudioBuffer();
+  };
+
+  var playNote = function (n) {
+    if (!m_audioContext)
+      return;
+
+    var freq = 110 * Math.pow(2, (n + 3 - 48) / 12);
+
+    // Create a source node.
+    var srcNode = m_audioContext.createBufferSource();
+    srcNode.buffer = m_audioBuffer;
+    srcNode.playbackRate.value = (freq / NOTE_FREQ); // * m_audioBuffer.sampleRate / m_audioContext.sampleRate;
+
+    // Connect the source node to the a gain node (for envelope).
+    var volume = 0.5;
+    var attack = 0.1;
+    var sustain = 0.2;
+    var release = 2.0;
+    var gainNode = m_audioContext.createGain();
+    var t0 = m_audioContext.currentTime;
+    gainNode.gain.setValueAtTime(0, t0);
+    gainNode.gain.linearRampToValueAtTime(volume, t0 + attack);
+    gainNode.gain.linearRampToValueAtTime(volume * 0.8, t0 + attack + sustain);
+    gainNode.gain.exponentialRampToValueAtTime(volume * 1e-3, t0 + attack + sustain + release);
+    gainNode.gain.linearRampToValueAtTime(0, t0 + attack + sustain + release + 0.001);
+    srcNode.connect(gainNode);
+
+    // Connect the gain node to the audio context destination node.
+    gainNode.connect(m_audioContext.destination);
+
+    // Start playback.
+    if (srcNode.noteOn)
+      srcNode.noteOn(0);
+    else
+      srcNode.start();
+  };
+
+  var keyDown = function (e) {
+    // Emulate a piano through keyboard input.
+    var n = -1;
+    switch (e.keyCode) {
+      // First octave on the ZXCVB... row
+      case 90: n = 0; break;
+      case 83: n = 1; break;
+      case 88: n = 2; break;
+      case 68: n = 3; break;
+      case 67: n = 4; break;
+      case 86: n = 5; break;
+      case 71: n = 6; break;
+      case 66: n = 7; break;
+      case 72: n = 8; break;
+      case 78: n = 9; break;
+      case 74: n = 10; break;
+      case 77: n = 11; break;
+      // "Bonus keys" 1 (extensions of first octave into second octave)
+      case 188: n = 12; break;
+      case 76: n = 13; break;
+      case 190: n = 14; break;
+      case 186: n = 15; break;
+      case 191: n = 16; break;
+      // Second octave on the QWERTY... row
+      case 81: n = 12; break;
+      case 50: n = 13; break;
+      case 87: n = 14; break;
+      case 51: n = 15; break;
+      case 69: n = 16; break;
+      case 82: n = 17; break;
+      case 53: n = 18; break;
+      case 84: n = 19; break;
+      case 54: n = 20; break;
+      case 89: n = 21; break;
+      case 55: n = 22; break;
+      case 85: n = 23; break;
+      // "Bonus keys" 2 (extensions of second octave into third octave)
+      case 73: n = 24; break;
+      case 57: n = 25; break;
+      case 79: n = 26; break;
+      case 48: n = 27; break;
+      case 80: n = 28; break;
+    }
+    if (n >= 0) {
+      playNote(n + m_octave * 12);
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      } else {
+        e.cancelBubble = true;
+      }
+    }
   };
 
   var drawProfile = function () {
@@ -189,6 +283,7 @@ function Demo() {
     m_profile_type = profile;
     generateProfile();
     drawProfile();
+    generateAudioBuffer();
   };
 
   var createSound = function () {
@@ -201,7 +296,7 @@ function Demo() {
     m_audioBuffer.getChannelData(1).set(m_wave.right);
   };
 
-  this.generate = function () {
+  var generateAudioBuffer = function () {
     var t0 = new Date();
 
     // Start by clearing the spectrum.
@@ -272,13 +367,7 @@ function Demo() {
     if (!m_audioContext) {
       return;
     }
-    var node = m_audioContext.createBufferSource();
-    node.buffer = m_audioBuffer;
-    node.connect(m_audioContext.destination);
-    if (node.noteOn)
-      node.noteOn(0);
-    else
-      node.start();
+    playNote(12 + m_octave * 12);
   };
 
 }
@@ -305,9 +394,12 @@ Width:<br />
 <canvas id="canvas" width="512" height="256"></canvas>
 </div>
 <div>
-<input type="submit" value="Generate" onclick="demo.generate()" />
 <input type="submit" value="Play" onclick="demo.play()" />
 <span id="output"></span>
+</div>
+<div>
+<p>Hint: You can use the computer keyboard as a piano keyboard to play notes!</p>
+<img src="keyboard-layout.png" />
 </div>
 </body>
 </html>
