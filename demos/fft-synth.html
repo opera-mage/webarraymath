@@ -43,7 +43,7 @@ function Demo() {
 
   var m_profile_type = 'gaussian';
   var m_profile_size = 0.25;
-  var m_profile = new Float32Array(PROFILE_SIZE);
+  var m_profile = new Float32Array(PROFILE_SIZE + 1);
 
   var m_octave = 5;
 
@@ -301,6 +301,7 @@ function Demo() {
     else {
       ArrayMath.fill(m_profile, 0);
     }
+    m_profile[PROFILE_SIZE] = 0;
   };
 
   this.setHarmonicProfile = function (profile) {
