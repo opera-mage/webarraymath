@@ -87,8 +87,12 @@ function Demo() {
     // Generate initial harmonic profile.
     updateProfileWidth();
 
+    // Set default octave.
+    document.getElementById("octave").value = m_octave;
+
     // Set up event handlers.
     document.getElementById("profileWidth").addEventListener("change", updateProfileWidth, false);
+    document.getElementById("octave").addEventListener("change", changeOctave, false);
     document.getElementById("canvas").addEventListener("mousedown", mouseDown, false);
     document.getElementById("canvas").addEventListener("mousemove", mouseMove, false);
     document.getElementById("canvas").addEventListener("mouseup", mouseUp, false);
@@ -101,6 +105,10 @@ function Demo() {
     generateProfile();
     drawProfile();
     generateAudioBuffer();
+  };
+
+  var changeOctave = function (e) {
+    m_octave = document.getElementById("octave").value;
   };
 
   var fixMouseEvent = function (e) {
@@ -175,30 +183,35 @@ function Demo() {
     // Create a source node.
     var srcNode = m_audioContext.createBufferSource();
     srcNode.buffer = m_audioBuffer;
+    srcNode.loop = true;
     srcNode.playbackRate.value = (freq / NOTE_FREQ); // * m_audioBuffer.sampleRate / m_audioContext.sampleRate;
 
     // Connect the source node to the a gain node (for envelope).
     var volume = 0.5;
-    var attack = 0.1;
-    var sustain = 0.2;
+    var attack = 0.5;
+    var sustain = 0.3;
     var release = 2.0;
+    var release2 = 0.001;
     var gainNode = m_audioContext.createGain();
     var t0 = m_audioContext.currentTime;
     gainNode.gain.setValueAtTime(0, t0);
     gainNode.gain.linearRampToValueAtTime(volume, t0 + attack);
     gainNode.gain.linearRampToValueAtTime(volume * 0.8, t0 + attack + sustain);
     gainNode.gain.exponentialRampToValueAtTime(volume * 1e-3, t0 + attack + sustain + release);
-    gainNode.gain.linearRampToValueAtTime(0, t0 + attack + sustain + release + 0.001);
+    gainNode.gain.linearRampToValueAtTime(0, t0 + attack + sustain + release + release2);
     srcNode.connect(gainNode);
 
     // Connect the gain node to the audio context destination node.
     gainNode.connect(m_audioContext.destination);
 
     // Start playback.
-    if (srcNode.noteOn)
+    if (srcNode.noteOn) {
       srcNode.noteOn(0);
-    else
+      srcNode.noteOff(t0 + attack + sustain + release + release2);
+    } else {
       srcNode.start();
+      srcNode.stop(t0 + attack + sustain + release + release2);
+    }
   };
 
   var keyDown = function (e) {
@@ -405,6 +418,8 @@ Width:<br />
 <canvas id="canvas" width="512" height="256"></canvas>
 </div>
 <div>
+Octave:
+<input id="octave" type="range" name="points" min="3" max="7" value="5" style="width: 120px" />
 <input type="submit" value="Play" onclick="demo.play()" />
 <span id="output"></span>
 </div>
