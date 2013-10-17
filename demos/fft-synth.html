@@ -31,9 +31,9 @@ body {
 function Demo() {
 
   var PROFILE_SIZE = 256;
-  var FFT_SIZE = 131072;
+  var FFT_SIZE = 131072 * 2;
   var SAMPLE_RATE = 44100;
-  var NOTE_FREQ = 4*220;
+  var NOTE_FREQ = 220;
 
   var m_canvas = {
     ctx: null,
@@ -184,7 +184,7 @@ function Demo() {
     var srcNode = m_audioContext.createBufferSource();
     srcNode.buffer = m_audioBuffer;
     srcNode.loop = true;
-    srcNode.playbackRate.value = (freq / NOTE_FREQ); // * m_audioBuffer.sampleRate / m_audioContext.sampleRate;
+    srcNode.playbackRate.value = (freq / NOTE_FREQ);
 
     // Connect the source node to the a gain node (for envelope).
     var volume = 0.5;
@@ -336,12 +336,14 @@ function Demo() {
     var fs = fs0;
     var harmonic = 1;
     while (fs < 0.5) {
-      // Uh, what is this?
-      var formants = Math.exp(-Math.pow((harmonic * NOTE_FREQ - 600.0) / 150.0, 2.0)) +
-                     Math.exp(-Math.pow((harmonic * NOTE_FREQ - 900.0) / 250.0, 2.0)) +
-                     Math.exp(-Math.pow((harmonic * NOTE_FREQ - 2200.0) / 200.0, 2.0)) +
-                     Math.exp(-Math.pow((harmonic * NOTE_FREQ - 2600.0) / 250.0, 2.0)) +
-                     Math.exp(-Math.pow((harmonic * NOTE_FREQ) / 3000.0, 2.0)) * 0.1;
+      // Emulate the formants for a vocal "aaaa" sound.
+      // See http://www2.siba.fi/akustiikka/?id=42&la=en
+      var harmonicFreq = harmonic * NOTE_FREQ;
+      var formants = Math.exp(-Math.pow((harmonicFreq - 600.0) / 150.0, 2.0)) +
+                     Math.exp(-Math.pow((harmonicFreq - 900.0) / 250.0, 2.0)) +
+                     Math.exp(-Math.pow((harmonicFreq - 2200.0) / 200.0, 2.0)) +
+                     Math.exp(-Math.pow((harmonicFreq - 2600.0) / 250.0, 2.0)) +
+                     Math.exp(-Math.pow(harmonicFreq / 3000.0, 2.0)) * 0.1;
       var amplitude = formants / harmonic;
 
       // Stretch the harmonic profile to the frequency specturm.
