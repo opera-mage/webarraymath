@@ -39,7 +39,11 @@
 		touches = [],
 		totalLines = 500000,
 		renderMode = 0,
-		numLines = totalLines;
+		numLines = totalLines,
+		tmp = new Float32Array( totalLines ),
+		dx = new Float32Array( totalLines ),
+		dy = new Float32Array( totalLines ),
+		dist = new Float32Array( totalLines );
 
 	// setup webGL
 	loadScene();
@@ -87,59 +91,53 @@
 
 	function animateParticles()
 	{
-		var p, d, i, j, nt, x, y;
+		var p, i, j, nt;
 
-		for( i = 0; i < numLines; i++ )
+		// copy old positions
+		vertX1.set( vertX2 );
+		vertY1.set( vertY2 );
+
+		// inertia
+		ArrayMath.mul( velX, velX, velZ );
+		ArrayMath.mul( velY, velY, velZ );
+
+		// horizontal
+		ArrayMath.add( vertX2, vertX2, velX );
+		ArrayMath.abs( tmp, vertX2 );
+		ArrayMath.sub( tmp, ratio, tmp );
+		ArrayMath.sign( tmp, tmp );
+		ArrayMath.mul( velX, velX, tmp );
+		ArrayMath.clamp( vertX2, vertX2, -ratio, ratio );
+
+		// vertical
+		ArrayMath.add( vertY2, vertY2, velY );
+		ArrayMath.abs( tmp, vertY2 );
+		ArrayMath.sub( tmp, 1, tmp );
+		ArrayMath.sign( tmp, tmp );
+		ArrayMath.mul( velY, velY, tmp );
+		ArrayMath.clamp( vertY2, vertY2, -1, 1 );
+
+		// attraction when touched
+		nt = touches.length;
+		for( j=0; j<nt; j+=2 )
 		{
-			// copy old positions
-			vertX1[i] = vertX2[i];
-			vertY1[i] = vertY2[i];
-			
-			// inertia
-			velX[i] *= velZ[i];
-			velY[i] *= velZ[i];
-			
-			// horizontal
-			p = vertX2[i];
-			p += velX[i];
-			if ( p < -ratio ) {
-				p = -ratio;
-				velX[i] = velX[i];
-			} else if ( p > ratio ) {
-				p = ratio;
-				velX[i] = -velX[i];
-			}
-			vertX2[i] = p;
-			
-			// vertical
-			p = vertY2[i];
-			p += velY[i];
-			if ( p < -1 ) {
-				p = -1;
-				velY[i] = velY[i];
-			} else if ( p > 1 ) {
-				p = 1;
-				velY[i] = -velY[i];
-			}
-			vertY2[i] = p;
-			
-			nt = touches.length;
-			if ( nt ) // attraction when touched
-			{
-				for( j=0; j<nt; j+=2 )
-				{
-					x = touches[j] - vertX1[i];
-					y = touches[j+1] - vertY1[i];
-					d = Math.sqrt(x * x + y * y);
-					
-					x /= d;
-					y /= d;
-					d = 0.1 * 0.5 * ( 2 - d );
-					d *= d;
-					velX[i] += x * d;
-					velY[i] += y * d;
-				}
-			}
+			// dist = distance to touch point
+			ArrayMath.sub( dx, touches[j], vertX1 );
+			ArrayMath.sub( dy, touches[j+1], vertY1 );
+			ArrayMath.absCplx( dist, dx, dy );
+
+			// (dx, dy) = normalized direction
+			ArrayMath.div( dx, dx, dist );
+			ArrayMath.div( dy, dy, dist );
+
+			// dist = attraction factor = (0.1 * 0.5 * (2 - dist))²
+			ArrayMath.sub( dist, 2, dist );
+			ArrayMath.mul( dist, 0.1 * 0.5, dist );
+			ArrayMath.mul( dist, dist, dist );
+
+			// velocity += attraction * dir
+			ArrayMath.madd( velX, dx, dist, velX );
+			ArrayMath.madd( velY, dy, dist, velY );
 		}
 	}
 
