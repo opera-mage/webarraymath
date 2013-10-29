@@ -1,3 +1,5 @@
+"use strict";
+
 (function(){
 	/**
 	 * Most of the WebGL-related code in this demo 
@@ -19,8 +21,9 @@
 		i, n,
 		canvas, gl,
 		ratio,
+		vertX1, vertY1, vertX2, vertY2,
+		velX, velY, velZ,
 		vertices,
-		velocities,
 		colorLoc,
 		cw, 
 		ch, 
@@ -34,7 +37,7 @@
 		lastUpdate = 0,
 		IDLE_DELAY = 6000,
 		touches = [],
-		totalLines = 60000,
+		totalLines = 500000,
 		renderMode = 0,
 		numLines = totalLines;
 
@@ -82,96 +85,77 @@
 		redraw();
 	}
 
+	function animateParticles()
+	{
+		var p, d, i, j, nt, x, y;
+
+		for( i = 0; i < numLines; i++ )
+		{
+			// copy old positions
+			vertX1[i] = vertX2[i];
+			vertY1[i] = vertY2[i];
+			
+			// inertia
+			velX[i] *= velZ[i];
+			velY[i] *= velZ[i];
+			
+			// horizontal
+			p = vertX2[i];
+			p += velX[i];
+			if ( p < -ratio ) {
+				p = -ratio;
+				velX[i] = velX[i];
+			} else if ( p > ratio ) {
+				p = ratio;
+				velX[i] = -velX[i];
+			}
+			vertX2[i] = p;
+			
+			// vertical
+			p = vertY2[i];
+			p += velY[i];
+			if ( p < -1 ) {
+				p = -1;
+				velY[i] = velY[i];
+			} else if ( p > 1 ) {
+				p = 1;
+				velY[i] = -velY[i];
+			}
+			vertY2[i] = p;
+			
+			nt = touches.length;
+			if ( nt ) // attraction when touched
+			{
+				for( j=0; j<nt; j+=2 )
+				{
+					x = touches[j] - vertX1[i];
+					y = touches[j+1] - vertY1[i];
+					d = Math.sqrt(x * x + y * y);
+					
+					x /= d;
+					y /= d;
+					d = 0.1 * 0.5 * ( 2 - d );
+					d *= d;
+					velX[i] += x * d;
+					velY[i] += y * d;
+				}
+			}
+		}
+	}
 
 	function redraw()
 	{
-
-		// declarations
-		var player, dx, dy, d,
-				tx, ty, bp, p, 
-				i = 0, nt, j,
-				now = new Date().getTime();
-		
-		nt = touches.length;
-		
 		// animate color
 		cr = cr * .99 + tr * .01;
 		cg = cg * .99 + tg * .01;
 		cb = cb * .99 + tb * .01;
 		gl.uniform4f( colorLoc, cr, cg, cb, .5 );
-		
+
 		// animate and attract particles
-		for( i = 0; i < numLines; i+=2 )
-		{
-			bp = i*3;
-			// copy old positions
-			vertices[bp] = vertices[bp+3];
-			vertices[bp+1] = vertices[bp+4];
-			
-			// inertia
-			velocities[bp] *= velocities[bp+2];
-			velocities[bp+1] *= velocities[bp+2];
-			
-			// horizontal
-			p = vertices[bp+3];
-			p += velocities[bp];
-			if ( p < -ratio ) {
-				p = -ratio;
-				velocities[bp] = Math.abs(velocities[bp]);
-			} else if ( p > ratio ) {
-				p = ratio;
-				velocities[bp] = -Math.abs(velocities[bp]);
-			}
-			vertices[bp+3] = p;
-			
-			// vertical
-			p = vertices[bp+4];
-			p += velocities[bp+1];
-			if ( p < -1 ) {
-				p = -1;
-				velocities[bp+1] = Math.abs(velocities[bp+1]);
-			} else if ( p > 1 ) {
-				p = 1;
-				velocities[bp+1] = -Math.abs(velocities[bp+1]);
-				
-			}
-			vertices[bp+4] = p;
-			
-			if ( nt ) // attraction when touched
-			{
-				for( j=0; j<nt; j+=2 )
-				{
-					dx = touches[j] - vertices[bp];
-					dy = touches[j+1] - vertices[bp+1];
-					d = Math.sqrt(dx * dx + dy * dy);
-					
-					if ( d < 2 )
-					{
-						if ( d < .03 )
-						{
-							//vertices[bp] = vertices[bp+3] = (Math.random() * 2 - 1)*ratio;
-							//vertices[bp+1] = vertices[bp+4] = Math.random() * 2 - 1;
-							vertices[bp] = (Math.random() * 2 - 1)*ratio;
-							vertices[bp+1] = Math.random() * 2 - 1;
-							vertices[bp+3] = (vertices[bp+3] + vertices[bp]) * .5;
-							vertices[bp+4] = (vertices[bp+4] + vertices[bp+1]) * .5;
-							velocities[bp] = Math.random()*.4-.2;
-							velocities[bp+1] = Math.random()*.4-.2;
-						} else {
-							dx /= d;
-							dy /= d;
-							d = ( 2 - d ) / 2;
-							d *= d;
-							velocities[bp] += dx * d * .01;
-							velocities[bp+1] += dy * d * .01;
-						}
-					}
-				}
-			}
-		}
+		animateParticles();
+		updateVertexBuffer();
 
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 			
 		switch( renderMode ) {
 			case 0 :
@@ -193,7 +177,6 @@
 				break;
 		}
 		
-		gl.flush();
 	}
 
 	var colorTimeout;
@@ -227,6 +210,11 @@
 
 		if ( colorTimeout ) clearTimeout( colorTimeout );
 		colorTimeout = setTimeout( switchColor, 500 + Math.random() * 4000 );
+	}
+
+	function updateVertexBuffer() {
+		ArrayMath.pack(vertices, 0, 4, vertX1, vertY1, vertX2, vertY2);
+		gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 	}
 
 	function loadScene()
@@ -342,32 +330,22 @@
 
 
 		//    
-		vertices = [];
+		vertX1 = new Float32Array( totalLines );
+		vertY1 = new Float32Array( totalLines );
+		vertX2 = new Float32Array( totalLines );
+		vertY2 = new Float32Array( totalLines );
+		velX = new Float32Array( totalLines );
+		velY = new Float32Array( totalLines );
+		velZ = new Float32Array( totalLines );
 		ratio = cw / ch;
-		velocities = [];
 		for ( var i=0; i<totalLines; i++ )
 		{
-			vertices.push( 0, 0, 1.83 );
-			velocities.push( (Math.random() * 2 - 1)*.05, (Math.random() * 2 - 1)*.05, .93 + Math.random()*.02 );
+			velX[i] = (Math.random() * 2 - 1)*.05;
+			velY[i] = (Math.random() * 2 - 1)*.05;
+			velZ[i] = .93 + Math.random()*.02;
 		}
-		vertices = new Float32Array( vertices );
-		velocities = new Float32Array( velocities );
-
-		//    Creates a new data store for the vertices array which is bound to the ARRAY_BUFFER.
-		//    The third paramater indicates the usage pattern of the data store. Possible values are
-		//    (from the OpenGL documentation):
-		//    The frequency of access may be one of these:       
-		//    STREAM - The data store contents will be modified once and used at most a few times.
-		//    STATIC - The data store contents will be modified once and used many times.
-		//    DYNAMIC - The data store contents will be modified repeatedly and used many times.
-		//    The nature of access may be one of these:
-		//    DRAW - The data store contents are modified by the application, and used as the source for 
-		//           GL drawing and image specification commands.
-		//    READ - The data store contents are modified by reading data from the GL, and used to return 
-		//           that data when queried by the application.
-		//    COPY - The data store contents are modified by reading data from the GL, and used as the source 
-		//           for GL drawing and image specification commands.                        
-		gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
+		vertices = new Float32Array( totalLines * 2 * 2 );
+		updateVertexBuffer();
 		
 		//    Clear the color buffer and the depth buffer
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -414,8 +392,7 @@
 	//				colorLoc = gl.getVaryingLocation(gl.program, "vColor");
 	//				alert("color loc : " + colorLoc );
 		//     Specify the location and format of the vertex position attribute
-		gl.vertexAttribPointer(vertexPosAttribLocation, 3.0, gl.FLOAT, false, 0, 0);
-		//gl.vertexAttribPointer(colorLoc, 4.0, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(vertexPosAttribLocation, 2.0, gl.FLOAT, false, 0, 0);
 		//     Get the location of the "modelViewMatrix" uniform variable from the 
 		//     shader program
 		var uModelViewMatrix = gl.getUniformLocation(gl.program, "modelViewMatrix");
