@@ -1,4 +1,4 @@
-importScripts("../polyfill/webarraymath.js");
+importScripts("../../polyfill/webarraymath.js");
 
 // Simple Uint8ClampedArray polyfill (for IE).
 if (!self.Uint8ClampedArray) {
