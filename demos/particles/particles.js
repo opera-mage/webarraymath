@@ -49,9 +49,10 @@
 	loadScene();
 
 	// add listeners
-	window.addEventListener( "resize", onResize, false )
+	window.addEventListener( "resize", onResize, false );
 	document.addEventListener( "mousedown", onMouseDown, false );
 	document.addEventListener( "keydown", onKey, false );
+	document.addEventListener( "touchstart", onTouchStart, false );
 	onResize();
 
 	// start animation
@@ -62,26 +63,54 @@
 		ch = window.innerHeight;
 	}  
 
-	function normalize(px, py){
-		touches[0] = (px/cw-.5)*3;
-		touches[1] = (py/ch-.5)*-2;
+	function registerTouch(px, py){
+		touches.push((px/cw-.5)*3);
+		touches.push((py/ch-.5)*-2);
 	}
 
-	function onMouseDown(e){
-		normalize(e.pageX,e.pageY);
+	function onMouseDown(e) {
+		touches.length = 0;
+		registerTouch( e.pageX, e.pageY );
 		document.addEventListener( "mousemove", onMouseMove );
 		document.addEventListener( "mouseup", onMouseUp );
 		e.preventDefault();
 	}
 
 	function onMouseMove(e) {
-		normalize(e.pageX,e.pageY);
+		touches.length = 0;
+		registerTouch( e.pageX, e.pageY );
 	}
 
 	function onMouseUp(e) {
 		touches.length = 0;
 		document.removeEventListener( "mousemove", onMouseMove );
 		document.removeEventListener( "mouseup", onMouseUp );
+	}
+
+	function onTouchStart(e) {
+		touches.length = 0;
+		for (var i = 0; i < e.touches.length; i++) {
+			var pos = e.touches[i];
+			registerTouch( pos.clientX, pos.clientY );
+		}
+		document.addEventListener( "touchmove", onTouchMove );
+		document.addEventListener( "touchend", onTouchEnd );
+		e.preventDefault();
+	}
+
+	function onTouchMove(e) {
+		touches.length = 0;
+		for (var i = 0; i < e.touches.length; i++) {
+			var pos = e.touches[i];
+			registerTouch( pos.clientX, pos.clientY );
+		}
+		e.preventDefault();
+	}
+
+	function onTouchEnd(e) {
+		touches.length = 0;
+		document.removeEventListener( "touchmove", onTouchMove );
+		document.removeEventListener( "touchend", onTouchEnd );
 	}
 
 	function animate() {
