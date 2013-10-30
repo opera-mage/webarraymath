@@ -24,7 +24,7 @@
 		canvas, gl,
 		ratio,
 		vertX1, vertY1, vertX2, vertY2,
-		velX, velY, velZ,
+		velX, velY, inertia,
 		vertices,
 		colorLoc,
 		cw, 
@@ -182,8 +182,8 @@
 		vertY1.set( vertY2 );
 
 		// inertia
-		ArrayMath.mul( velX, velX, velZ );
-		ArrayMath.mul( velY, velY, velZ );
+		ArrayMath.mul( velX, inertia, velX );
+		ArrayMath.mul( velY, inertia, velY );
 
 		// horizontal
 		ArrayMath.add( vertX2, vertX2, velX );
@@ -214,9 +214,9 @@
 			ArrayMath.div( dx, dx, dist );
 			ArrayMath.div( dy, dy, dist );
 
-			// dist = attraction factor = (0.1 * 0.5 * (2 - dist))²
-			ArrayMath.sub( dist, 2, dist );
-			ArrayMath.mul( dist, 0.1 * 0.5, dist );
+			// dist = attraction factor = (0.1 * (1 - dist / 4))²
+			ArrayMath.sub( dist, 4, dist );
+			ArrayMath.mul( dist, 0.1 / 4, dist );
 			ArrayMath.mul( dist, dist, dist );
 
 			// velocity += attraction * dir
@@ -396,13 +396,10 @@
 		vertY2 = new Float32Array( totalLines );
 		velX = new Float32Array( totalLines );
 		velY = new Float32Array( totalLines );
-		velZ = new Float32Array( totalLines );
-		for ( var i=0; i<totalLines; i++ )
-		{
-			velX[i] = (Math.random() * 2 - 1)*.05;
-			velY[i] = (Math.random() * 2 - 1)*.05;
-			velZ[i] = .93 + Math.random()*.02;
-		}
+		inertia = new Float32Array( totalLines );
+		ArrayMath.random( velX, -0.05, 0.05 );
+		ArrayMath.random( velY, -0.05, 0.05 );
+		ArrayMath.random( inertia, 0.93, 0.96 );
 		vertices = new Float32Array( totalLines * 2 * 2 );
 		updateVertexBuffer();
 		
