@@ -38,7 +38,6 @@
 		IDLE_DELAY = 6000,
 		touches = [],
 		totalLines = 500000,
-		renderMode = 0,
 		numLines = totalLines,
 		tmp = new Float32Array( totalLines ),
 		dx = new Float32Array( totalLines ),
@@ -54,7 +53,6 @@
 	document.addEventListener( "touchstart", onTouchStart, false );
 	document.addEventListener( "touchmove", onTouchMove, false );
 	document.addEventListener( "touchend", onTouchEnd, false );
-	document.addEventListener( "keydown", onKey, false );
 
 	// start animation
 	animate();
@@ -228,26 +226,8 @@
 
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			
-		switch( renderMode ) {
-			case 0 :
-				gl.lineWidth(1);
-				gl.drawArrays( gl.LINES, 0, numLines );
-				break;
-				
-			case 1:
-				gl.drawArrays( gl.TRIANGLE_STRIP, 0, numLines ); 
-				break;
-				
-			case 2 :
-				gl.lineWidth(1);
-				gl.drawArrays( gl.LINE_STRIP, 0, numLines );
-				break;
-				
-			case 3:
-				gl.drawArrays( gl.TRIANGLE_FAN, 0, numLines ); 
-				break;
-		}
-		
+		gl.lineWidth(1);
+		gl.drawArrays( gl.LINES, 0, numLines );
 	}
 
 	var colorTimeout;
@@ -426,26 +406,5 @@
 		switchColor();
 	}
 
-	function onKey( e ) {
-		setRenderMode( ++renderMode % 4 );
-	}
-
-	function setRenderMode( n ) {
-		renderMode = n;
-		switch(renderMode) {
-			case 0: // lines
-				numLines = totalLines;
-				break;
-			case 1: // triangle strip
-				numLines = 600;
-				break;
-			case 2: // lines strip
-				numLines = 7000;
-				break;
-			case 3: // quad strip
-				numLines = 400;
-				break;
-		}
-	}
 }());
 
