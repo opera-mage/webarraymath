@@ -51,20 +51,66 @@
 	// add listeners
 	window.addEventListener( "resize", onResize, false );
 	document.addEventListener( "mousedown", onMouseDown, false );
-	document.addEventListener( "keydown", onKey, false );
 	document.addEventListener( "touchstart", onTouchStart, false );
-	onResize();
+	document.addEventListener( "touchmove", onTouchMove, false );
+	document.addEventListener( "touchend", onTouchEnd, false );
+	document.addEventListener( "keydown", onKey, false );
 
 	// start animation
 	animate();
 
+	function updateCanvasSize(w, h) {
+		cw = w;
+		ch = h;
+		ratio = cw / ch;
+		canvas.width = cw;
+		canvas.height = ch;
+		gl.viewport(0, 0, canvas.width, canvas.height);
+	}
+
+	function updatePerspectiveMatrix(w, h) {
+		//    Define the viewing frustum parameters
+		//    More info: http://en.wikipedia.org/wiki/Viewing_frustum
+		//    More info: http://knol.google.com/k/view-frustum
+		var fieldOfView = 30.0;
+		var aspectRatio = w / h;
+		var nearPlane = 1.0;
+		var farPlane = 10000.0;
+		var top = nearPlane * Math.tan(fieldOfView * Math.PI / 360.0);
+		var bottom = -top;
+		var right = top * aspectRatio;
+		var left = -right;
+
+		//     Create the perspective matrix. The OpenGL function that's normally used for this,
+		//     glFrustum() is not included in the WebGL API. That's why we have to do it manually here.
+		//     More info: http://www.cs.utk.edu/~vose/c-stuff/opengl/glFrustum.html
+		var a = (right + left) / (right - left);
+		var b = (top + bottom) / (top - bottom);
+		var c = (farPlane + nearPlane) / (farPlane - nearPlane);
+		var d = (2 * farPlane * nearPlane) / (farPlane - nearPlane);
+		var x = (2 * nearPlane) / (right - left);
+		var y = (2 * nearPlane) / (top - bottom);
+		var perspectiveMatrix = [
+			x, 0, a, 0,
+			0, y, b, 0,
+			0, 0, c, d,
+			0, 0, -1, 0
+		];
+		//     Get the location of the "perspectiveMatrix" uniform variable from the
+		//     shader program
+		var uPerspectiveMatrix = gl.getUniformLocation(gl.program, "perspectiveMatrix");
+		//     Set the values
+		gl.uniformMatrix4fv(uPerspectiveMatrix, false, new Float32Array(perspectiveMatrix));
+	}
+
 	function onResize(e) {
-		cw = window.innerWidth; 
-		ch = window.innerHeight;
+		var w = window.innerWidth, h = window.innerHeight;
+		updateCanvasSize(w, h);
+		updatePerspectiveMatrix(w, h);
 	}  
 
 	function registerTouch(px, py){
-		touches.push((px/cw-.5)*3);
+		touches.push((px/cw-.5)*2*ratio);
 		touches.push((py/ch-.5)*-2);
 	}
 
@@ -93,8 +139,6 @@
 			var pos = e.touches[i];
 			registerTouch( pos.clientX, pos.clientY );
 		}
-		document.addEventListener( "touchmove", onTouchMove );
-		document.addEventListener( "touchend", onTouchEnd );
 		e.preventDefault();
 	}
 
@@ -108,9 +152,9 @@
 	}
 
 	function onTouchEnd(e) {
-		touches.length = 0;
-		document.removeEventListener( "touchmove", onTouchMove );
-		document.removeEventListener( "touchend", onTouchEnd );
+		if (e.touches.length == 0)
+			touches.length = 0;
+		e.preventDefault();
 	}
 
 	function animate() {
@@ -258,11 +302,7 @@
 			return;
 		}
 		//    Set the viewport to the canvas width and height
-		cw = window.innerWidth;
-		ch = window.innerHeight;
-		canvas.width = cw;
-		canvas.height = ch;
-		gl.viewport(0, 0, canvas.width, canvas.height);
+		updateCanvasSize(window.innerWidth, window.innerHeight);
 		
 		//    Load the vertex shader that's defined in a separate script
 		//    block at the top of this page.
@@ -364,7 +404,6 @@
 		velX = new Float32Array( totalLines );
 		velY = new Float32Array( totalLines );
 		velZ = new Float32Array( totalLines );
-		ratio = cw / ch;
 		for ( var i=0; i<totalLines; i++ )
 		{
 			velX[i] = (Math.random() * 2 - 1)*.05;
@@ -376,65 +415,14 @@
 		
 		//    Clear the color buffer and the depth buffer
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		
-		//    Define the viewing frustum parameters
-		//    More info: http://en.wikipedia.org/wiki/Viewing_frustum
-		//    More info: http://knol.google.com/k/view-frustum
-		var fieldOfView = 30.0;
-		var aspectRatio = canvas.width / canvas.height;
-		var nearPlane = 1.0;
-		var farPlane = 10000.0;
-		var top = nearPlane * Math.tan(fieldOfView * Math.PI / 360.0);
-		var bottom = -top;
-		var right = top * aspectRatio;
-		var left = -right;
 
-		//     Create the perspective matrix. The OpenGL function that's normally used for this,
-		//     glFrustum() is not included in the WebGL API. That's why we have to do it manually here.
-		//     More info: http://www.cs.utk.edu/~vose/c-stuff/opengl/glFrustum.html
-		var a = (right + left) / (right - left);
-		var b = (top + bottom) / (top - bottom);
-		var c = (farPlane + nearPlane) / (farPlane - nearPlane);
-		var d = (2 * farPlane * nearPlane) / (farPlane - nearPlane);
-		var x = (2 * nearPlane) / (right - left);
-		var y = (2 * nearPlane) / (top - bottom);
-		var perspectiveMatrix = [
-			x, 0, a, 0,
-			0, y, b, 0,
-			0, 0, c, d,
-			0, 0, -1, 0
-		];
-		
-		//     Create the modelview matrix
-		//     More info about the modelview matrix: http://3dengine.org/Modelview_matrix
-		//     More info about the identity matrix: http://en.wikipedia.org/wiki/Identity_matrix
-		var modelViewMatrix = [
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1
-		];
 		//     Get the vertex position attribute location from the shader program
 		var vertexPosAttribLocation = gl.getAttribLocation(gl.program, "vertexPosition");
-	//				colorLoc = gl.getVaryingLocation(gl.program, "vColor");
-	//				alert("color loc : " + colorLoc );
 		//     Specify the location and format of the vertex position attribute
 		gl.vertexAttribPointer(vertexPosAttribLocation, 2.0, gl.FLOAT, false, 0, 0);
-		//     Get the location of the "modelViewMatrix" uniform variable from the 
-		//     shader program
-		var uModelViewMatrix = gl.getUniformLocation(gl.program, "modelViewMatrix");
-		//     Get the location of the "perspectiveMatrix" uniform variable from the 
-		//     shader program
-		var uPerspectiveMatrix = gl.getUniformLocation(gl.program, "perspectiveMatrix");
-		//     Set the values
-		gl.uniformMatrix4fv(uModelViewMatrix, false, new Float32Array(perspectiveMatrix));
-		gl.uniformMatrix4fv(uPerspectiveMatrix, false, new Float32Array(modelViewMatrix));
-	//	gl.varyingVector4fv( 
-		//     Draw the triangles in the vertex buffer. The first parameter specifies what
-		//     drawing mode to use. This can be GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, 
-		//     GL_LINES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_TRIANGLES, GL_QUAD_STRIP, 
-		//     GL_QUADS, and GL_POLYGON
 		
+		updatePerspectiveMatrix(window.innerWidth, window.innerHeight);
+
 		switchColor();
 	}
 
