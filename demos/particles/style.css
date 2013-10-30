@@ -13,6 +13,17 @@ canvas {
 	-webkit-transform: translateZ(0); 
 	cursor: crosshair;/*NW-resize;*/
 }  
+#fps {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	padding: 5px;
+	color: white;
+	text-align: center;
+	font-family: Helvetica;
+	font-size: 14px;
+	z-index:  5;
+}
 #instructions {
 	position: absolute;
 	left: 0px;

@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, target-densitydpi=device-dpi">
 		<link type="text/css" rel="stylesheet" href="style.css">
 		<script type="text/javascript" src="../../polyfill/webarraymath.js"></script>
+		<script type="text/javascript" src="../fpscounter.js"></script>
 		
 		<script id="shader-fs" type="x-shader/x-fragment">
 				#ifdef GL_ES
@@ -31,6 +32,7 @@
 	</head>
 	<body>
 		<canvas id="webGLCanvas"></canvas>
+		<div id="fps"></div>
 		<div id="instructions">Click and drag to animate particles (multi touch works too!)</div>
 
 		<script type="text/javascript" src="particles.js"></script>

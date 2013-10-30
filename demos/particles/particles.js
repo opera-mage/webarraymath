@@ -17,6 +17,8 @@
 	}
 
 	var offset = 0,
+		fpsCounter = new FPSCounter(),
+		fpsElement,
 		deadTimeOut = 1000,
 		i, n,
 		canvas, gl,
@@ -43,6 +45,9 @@
 		dx = new Float32Array( totalLines ),
 		dy = new Float32Array( totalLines ),
 		dist = new Float32Array( totalLines );
+
+	// Get the FPS counter document element.
+	fpsElement = document.getElementById("fps");
 
 	// setup webGL
 	loadScene();
@@ -156,8 +161,16 @@
 	}
 
 	function animate() {
+		fpsCounter.update();
+
 		requestAnimationFrame( animate );
 		redraw();
+
+		var fps = fpsCounter.get();
+		if (fps > 0) {
+			var fpsDisp = Math.round(fps * 10) / 10;
+			fpsElement.innerHTML = "" + fpsDisp + " fps";
+		}
 	}
 
 	function animateParticles()
