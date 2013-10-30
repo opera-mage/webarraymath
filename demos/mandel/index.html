@@ -1,6 +1,7 @@
 <html>
 <head>
 <title>Web Array Math API - Mandelbrot demo</title>
+<script type="text/javascript" src="../fpscounter.js"></script>
 <script type="text/javascript">
 "use strict";
 
@@ -12,10 +13,9 @@ if (!window.requestAnimationFrame) {
     window.requestAnimationFrame = webkitRequestAnimationFrame;
   else
     window.requestAnimationFrame = function (f) {
-      setTimeout(f, 1);
+      setTimeout(f, 1000 / 60);
     };
 }
-
 
 function Demo() {
   // Constants.
@@ -40,10 +40,7 @@ function Demo() {
   var m_t_start = -1;
 
   // FPS counter.
-  var m_num_frames = 0;
-  var m_total_frames_time = 0;
-  var m_frame_start_time;
-  var m_fps = -1;
+  var m_fpsCounter;
 
   var animateBounds = function () {
     var t = (new Date()).getTime() * 0.001;
@@ -86,24 +83,15 @@ function Demo() {
         m_num_active_workers--;
         if (m_num_active_workers == 0) {
             // Update FPS counter.
-            var t = (new Date()).getTime();
-            if (m_frame_start_time > 0) {
-              var dt = (t - m_frame_start_time) * 0.001;
-              m_total_frames_time += dt;
-              m_num_frames++;
-              if (m_total_frames_time >= 1.0 && m_num_frames >= 2) {
-                m_fps = m_num_frames / m_total_frames_time;
-                m_total_frames_time = 0;
-                m_num_frames = 0;
-              }
-            }
-            m_frame_start_time = t;
+            m_fpsCounter.update();
 
             // Write the image data.
             m_ctx.putImageData(m_img, 0, 0);
 
-            if (m_fps > 0) {
-              var fpsDisp = Math.round(m_fps * 10) / 10;
+            // Display fps.
+            var fps = m_fpsCounter.get();
+            if (fps > 0) {
+              var fpsDisp = Math.round(fps * 10) / 10;
               m_ctx.fillText("" + fpsDisp + " fps", 10, 10);
             }
 
@@ -168,6 +156,9 @@ function Demo() {
       m_workers[k] = w;
     }
     m_num_active_workers = 0;
+
+    // Create the FPS counter.
+    m_fpsCounter = new FPSCounter();
 
     // Start animation.
     redraw();
