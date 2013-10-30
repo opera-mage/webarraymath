@@ -16,38 +16,26 @@
 			function ( callback ) { setTimeout( callback, 1000/60 ); };
 	}
 
-	var offset = 0,
-		fpsCounter = new FPSCounter(),
-		fpsElement,
-		deadTimeOut = 1000,
-		i, n,
-		canvas, gl,
-		ratio,
-		vertX1, vertY1, vertX2, vertY2,
-		velX, velY, inertia,
-		vertices,
-		colorLoc,
-		cw, 
-		ch, 
-		cr = 0, cg = 0, cb = 0,
-		tr, tg, tb,
-		rndX = 0,
-		rndY = 0,
-		rndOn = false,
-		rndSX = 0,
-		rndSY = 0,
-		lastUpdate = 0,
-		IDLE_DELAY = 6000,
-		touches = [],
-		totalLines = 500000,
-		numLines = totalLines,
-		tmp = new Float32Array( totalLines ),
-		dx = new Float32Array( totalLines ),
-		dy = new Float32Array( totalLines ),
-		dist = new Float32Array( totalLines );
-
-	// Get the FPS counter document element.
-	fpsElement = document.getElementById("fps");
+	var
+		m_fpsCounter = new FPSCounter(),
+		m_fpsElement = document.getElementById("fps"),
+		m_colorTimeout,
+		m_canvas,
+		gl,
+		m_screenRatio,
+		m_vertX1, m_vertY1, m_vertX2, m_vertY2,
+		m_velX, m_velY, m_inertia,
+		m_vertices,
+		m_colorLoc,
+		m_cw, m_ch,
+		m_cr = 0, m_cg = 0, m_cb = 0,
+		m_tr, m_tg, m_tb,
+		m_touches = [],
+		m_numLines = 500000,
+		m_tmp = new Float32Array( m_numLines ),
+		m_dx = new Float32Array( m_numLines ),
+		m_dy = new Float32Array( m_numLines ),
+		m_dist = new Float32Array( m_numLines );
 
 	// setup webGL
 	loadScene();
@@ -63,12 +51,12 @@
 	animate();
 
 	function updateCanvasSize(w, h) {
-		cw = w;
-		ch = h;
-		ratio = cw / ch;
-		canvas.width = cw;
-		canvas.height = ch;
-		gl.viewport(0, 0, canvas.width, canvas.height);
+		m_cw = w;
+		m_ch = h;
+		m_screenRatio = m_cw / m_ch;
+		m_canvas.width = m_cw;
+		m_canvas.height = m_ch;
+		gl.viewport(0, 0, m_canvas.width, m_canvas.height);
 	}
 
 	function updatePerspectiveMatrix(w, h) {
@@ -113,12 +101,12 @@
 	}  
 
 	function registerTouch(px, py){
-		touches.push((px/cw-.5)*2*ratio);
-		touches.push((py/ch-.5)*-2);
+		m_touches.push((px/m_cw-.5)*2*m_screenRatio);
+		m_touches.push((py/m_ch-.5)*-2);
 	}
 
 	function onMouseDown(e) {
-		touches.length = 0;
+		m_touches.length = 0;
 		registerTouch( e.pageX, e.pageY );
 		document.addEventListener( "mousemove", onMouseMove );
 		document.addEventListener( "mouseup", onMouseUp );
@@ -126,18 +114,18 @@
 	}
 
 	function onMouseMove(e) {
-		touches.length = 0;
+		m_touches.length = 0;
 		registerTouch( e.pageX, e.pageY );
 	}
 
 	function onMouseUp(e) {
-		touches.length = 0;
+		m_touches.length = 0;
 		document.removeEventListener( "mousemove", onMouseMove );
 		document.removeEventListener( "mouseup", onMouseUp );
 	}
 
 	function onTouch(e) {
-		touches.length = 0;
+		m_touches.length = 0;
 		for (var i = 0; i < e.touches.length; i++) {
 			var pos = e.touches[i];
 			registerTouch( pos.clientX, pos.clientY );
@@ -146,15 +134,15 @@
 	}
 
 	function animate() {
-		fpsCounter.update();
+		m_fpsCounter.update();
 
 		requestAnimationFrame( animate );
 		redraw();
 
-		var fps = fpsCounter.get();
+		var fps = m_fpsCounter.get();
 		if (fps > 0) {
 			var fpsDisp = Math.round(fps * 10) / 10;
-			fpsElement.innerHTML = "" + fpsDisp + " fps";
+			m_fpsElement.innerHTML = "" + fpsDisp + " fps";
 		}
 	}
 
@@ -163,60 +151,60 @@
 		var p, i, j, nt;
 
 		// copy old positions
-		vertX1.set( vertX2 );
-		vertY1.set( vertY2 );
+		m_vertX1.set( m_vertX2 );
+		m_vertY1.set( m_vertY2 );
 
 		// inertia
-		ArrayMath.mul( velX, inertia, velX );
-		ArrayMath.mul( velY, inertia, velY );
+		ArrayMath.mul( m_velX, m_inertia, m_velX );
+		ArrayMath.mul( m_velY, m_inertia, m_velY );
 
 		// horizontal
-		ArrayMath.add( vertX2, vertX2, velX );
-		ArrayMath.abs( tmp, vertX2 );
-		ArrayMath.sub( tmp, ratio, tmp );
-		ArrayMath.sign( tmp, tmp );
-		ArrayMath.mul( velX, velX, tmp );
-		ArrayMath.clamp( vertX2, vertX2, -ratio, ratio );
+		ArrayMath.add( m_vertX2, m_vertX2, m_velX );
+		ArrayMath.abs( m_tmp, m_vertX2 );
+		ArrayMath.sub( m_tmp, m_screenRatio, m_tmp );
+		ArrayMath.sign( m_tmp, m_tmp );
+		ArrayMath.mul( m_velX, m_velX, m_tmp );
+		ArrayMath.clamp( m_vertX2, m_vertX2, -m_screenRatio, m_screenRatio );
 
 		// vertical
-		ArrayMath.add( vertY2, vertY2, velY );
-		ArrayMath.abs( tmp, vertY2 );
-		ArrayMath.sub( tmp, 1, tmp );
-		ArrayMath.sign( tmp, tmp );
-		ArrayMath.mul( velY, velY, tmp );
-		ArrayMath.clamp( vertY2, vertY2, -1, 1 );
+		ArrayMath.add( m_vertY2, m_vertY2, m_velY );
+		ArrayMath.abs( m_tmp, m_vertY2 );
+		ArrayMath.sub( m_tmp, 1, m_tmp );
+		ArrayMath.sign( m_tmp, m_tmp );
+		ArrayMath.mul( m_velY, m_velY, m_tmp );
+		ArrayMath.clamp( m_vertY2, m_vertY2, -1, 1 );
 
 		// attraction when touched
-		nt = touches.length;
+		nt = m_touches.length;
 		for( j=0; j<nt; j+=2 )
 		{
-			// dist = distance to touch point
-			ArrayMath.sub( dx, touches[j], vertX1 );
-			ArrayMath.sub( dy, touches[j+1], vertY1 );
-			ArrayMath.absCplx( dist, dx, dy );
+			// m_dist = distance to touch point
+			ArrayMath.sub( m_dx, m_touches[j], m_vertX1 );
+			ArrayMath.sub( m_dy, m_touches[j+1], m_vertY1 );
+			ArrayMath.absCplx( m_dist, m_dx, m_dy );
 
-			// (dx, dy) = normalized direction
-			ArrayMath.div( dx, dx, dist );
-			ArrayMath.div( dy, dy, dist );
+			// (m_dx, m_dy) = normalized direction
+			ArrayMath.div( m_dx, m_dx, m_dist );
+			ArrayMath.div( m_dy, m_dy, m_dist );
 
-			// dist = attraction factor = (0.1 * (1 - dist / 4))²
-			ArrayMath.sub( dist, 4, dist );
-			ArrayMath.mul( dist, 0.1 / 4, dist );
-			ArrayMath.mul( dist, dist, dist );
+			// m_dist = attraction factor = (0.1 * (1 - m_dist / 4))²
+			ArrayMath.sub( m_dist, 4, m_dist );
+			ArrayMath.mul( m_dist, 0.1 / 4, m_dist );
+			ArrayMath.mul( m_dist, m_dist, m_dist );
 
 			// velocity += attraction * dir
-			ArrayMath.madd( velX, dx, dist, velX );
-			ArrayMath.madd( velY, dy, dist, velY );
+			ArrayMath.madd( m_velX, m_dx, m_dist, m_velX );
+			ArrayMath.madd( m_velY, m_dy, m_dist, m_velY );
 		}
 	}
 
 	function redraw()
 	{
 		// animate color
-		cr = cr * .99 + tr * .01;
-		cg = cg * .99 + tg * .01;
-		cb = cb * .99 + tb * .01;
-		gl.uniform4f( colorLoc, cr, cg, cb, .5 );
+		m_cr = m_cr * .99 + m_tr * .01;
+		m_cg = m_cg * .99 + m_tg * .01;
+		m_cb = m_cb * .99 + m_tb * .01;
+		gl.uniform4f( m_colorLoc, m_cr, m_cg, m_cb, .5 );
 
 		// animate and attract particles
 		animateParticles();
@@ -225,10 +213,8 @@
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			
 		gl.lineWidth(1);
-		gl.drawArrays( gl.LINES, 0, numLines );
+		gl.drawArrays( gl.LINES, 0, m_numLines );
 	}
-
-	var colorTimeout;
 
 	function switchColor() {
 		var a = .5,
@@ -238,40 +224,38 @@
 			
 		switch( Math.floor( Math.random() * 3 ) ) {
 			case 0 :
-				//gl.uniform4f( colorLoc, c1, c2, c3, a );
-				tr = c1;
-				tg = c2;
-				tb = c3;
+				m_tr = c1;
+				m_tg = c2;
+				m_tb = c3;
 				break;
 			case 1 :
-				//gl.uniform4f( colorLoc, c2, c1, c3, a );
-				tr = c2;
-				tg = c1;
-				tb = c3;
+				m_tr = c2;
+				m_tg = c1;
+				m_tb = c3;
 				break;
 			case 2 :
-				//gl.uniform4f( colorLoc, c3, c2, c1, a );
-				tr = c3;
-				tg = c2;
-				tb = c1;
+				m_tr = c3;
+				m_tg = c2;
+				m_tb = c1;
 				break;
 		}
 
-		if ( colorTimeout ) clearTimeout( colorTimeout );
-		colorTimeout = setTimeout( switchColor, 500 + Math.random() * 4000 );
+		if ( m_colorTimeout )
+			clearTimeout( m_colorTimeout );
+		m_colorTimeout = setTimeout( switchColor, 500 + Math.random() * 4000 );
 	}
 
 	function updateVertexBuffer() {
-		ArrayMath.pack(vertices, 0, 4, vertX1, vertY1, vertX2, vertY2);
-		gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
+		ArrayMath.pack(m_vertices, 0, 4, m_vertX1, m_vertY1, m_vertX2, m_vertY2);
+		gl.bufferData(gl.ARRAY_BUFFER, m_vertices, gl.DYNAMIC_DRAW);
 	}
 
 	function loadScene()
 	{
 		//    Get the canvas element
-		canvas = document.getElementById("webGLCanvas");
+		m_canvas = document.getElementById("webGLCanvas");
 		//    Get the WebGL context
-		gl = canvas.getContext("experimental-webgl");
+		gl = m_canvas.getContext("experimental-webgl");
 		//    Check whether the WebGL context is available or not
 		//    if it's not available exit
 		if(!gl)
@@ -330,8 +314,8 @@
 		
 		
 		// get the color uniform location
-		colorLoc = gl.getUniformLocation( gl.program, "color" );
-		gl.uniform4f( colorLoc, 0.4, 0.01, 0.08, 0.5 );
+		m_colorLoc = gl.getUniformLocation( gl.program, "color" );
+		gl.uniform4f( m_colorLoc, 0.4, 0.01, 0.08, 0.5 );
 		
 		
 		//    Get the vertexPosition attribute from the linked shader program
@@ -373,19 +357,17 @@
 		//    Bind the buffer object to the ARRAY_BUFFER target.
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
-
-		//    
-		vertX1 = new Float32Array( totalLines );
-		vertY1 = new Float32Array( totalLines );
-		vertX2 = new Float32Array( totalLines );
-		vertY2 = new Float32Array( totalLines );
-		velX = new Float32Array( totalLines );
-		velY = new Float32Array( totalLines );
-		inertia = new Float32Array( totalLines );
-		ArrayMath.random( velX, -0.05, 0.05 );
-		ArrayMath.random( velY, -0.05, 0.05 );
-		ArrayMath.random( inertia, 0.93, 0.96 );
-		vertices = new Float32Array( totalLines * 2 * 2 );
+		m_vertX1 = new Float32Array( m_numLines );
+		m_vertY1 = new Float32Array( m_numLines );
+		m_vertX2 = new Float32Array( m_numLines );
+		m_vertY2 = new Float32Array( m_numLines );
+		m_velX = new Float32Array( m_numLines );
+		m_velY = new Float32Array( m_numLines );
+		m_inertia = new Float32Array( m_numLines );
+		ArrayMath.random( m_velX, -0.05, 0.05 );
+		ArrayMath.random( m_velY, -0.05, 0.05 );
+		ArrayMath.random( m_inertia, 0.93, 0.96 );
+		m_vertices = new Float32Array( m_numLines * 2 * 2 );
 		updateVertexBuffer();
 		
 		//    Clear the color buffer and the depth buffer
