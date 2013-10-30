@@ -55,9 +55,9 @@
 	// add listeners
 	window.addEventListener( "resize", onResize, false );
 	document.addEventListener( "mousedown", onMouseDown, false );
-	document.addEventListener( "touchstart", onTouchStart, false );
-	document.addEventListener( "touchmove", onTouchMove, false );
-	document.addEventListener( "touchend", onTouchEnd, false );
+	document.addEventListener( "touchstart", onTouch, false );
+	document.addEventListener( "touchmove", onTouch, false );
+	document.addEventListener( "touchend", onTouch, false );
 
 	// start animation
 	animate();
@@ -136,27 +136,12 @@
 		document.removeEventListener( "mouseup", onMouseUp );
 	}
 
-	function onTouchStart(e) {
+	function onTouch(e) {
 		touches.length = 0;
 		for (var i = 0; i < e.touches.length; i++) {
 			var pos = e.touches[i];
 			registerTouch( pos.clientX, pos.clientY );
 		}
-		e.preventDefault();
-	}
-
-	function onTouchMove(e) {
-		touches.length = 0;
-		for (var i = 0; i < e.touches.length; i++) {
-			var pos = e.touches[i];
-			registerTouch( pos.clientX, pos.clientY );
-		}
-		e.preventDefault();
-	}
-
-	function onTouchEnd(e) {
-		if (e.touches.length == 0)
-			touches.length = 0;
 		e.preventDefault();
 	}
 
