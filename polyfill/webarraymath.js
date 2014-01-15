@@ -29,6 +29,8 @@
 // interface ArrayMath
 //------------------------------------------------------------------------------
 
+var self = typeof module === 'undefined' ? window : module.exports;
+
 (function () {
   if (self.ArrayMath) return;
 
