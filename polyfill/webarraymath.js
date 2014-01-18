@@ -29,10 +29,10 @@
 // interface ArrayMath
 //------------------------------------------------------------------------------
 
-var self = typeof module === 'undefined' ? window : module.exports;
+var context = typeof module === 'undefined' ? self : module.exports;
 
 (function () {
-  if (self.ArrayMath) return;
+  if (context.ArrayMath) return;
 
   var ArrayMath = {};
 
@@ -427,7 +427,7 @@ var self = typeof module === 'undefined' ? window : module.exports;
       }
   };
 
-  self.ArrayMath = ArrayMath;
+  context.ArrayMath = ArrayMath;
 })();
 
 
@@ -436,7 +436,7 @@ var self = typeof module === 'undefined' ? window : module.exports;
 //------------------------------------------------------------------------------
 
 (function () {
-  if (self.Filter) return;
+  if (context.Filter) return;
 
   var Filter = function (bSize, aSize) {
     if (isNaN(parseFloat(bSize)) || !isFinite(bSize))
@@ -550,7 +550,7 @@ var self = typeof module === 'undefined' ? window : module.exports;
       this._a[k] = values[k];
   };
 
-  self.Filter = Filter;
+  context.Filter = Filter;
 })();
 
 
@@ -567,7 +567,7 @@ var self = typeof module === 'undefined' ? window : module.exports;
 //------------------------------------------------------------------------------
 
 (function () {
-  if (self.FFT) return;
+  if (context.FFT) return;
 
   var butterfly2 = function (outRe, outIm, outIdx, stride, twRe, twIm, m) {
     var scratch0Re, scratch0Im,
@@ -1051,6 +1051,6 @@ var self = typeof module === 'undefined' ? window : module.exports;
     this.inverseCplx(dst, new Float32Array(this.size), xReal, xImag);
   };
 
-  self.FFT = FFT;
+  context.FFT = FFT;
 })();
 
